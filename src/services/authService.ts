@@ -159,24 +159,22 @@ export async function loginStaff(
   }
 
   // Demo fallback
-  if (cleanUsername === 'staff') {
-    const authData: StaffAuthData = {
-      staffId: 'st-1',
-      name: 'Maria Vella',
-      role: 'staff',
-      department: 'Housekeeping',
-      hotelId: 'a0000000-0000-0000-0000-000000000001',
-    };
-    localStorage.setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
-    return authData;
-  }
+  const fallbackMap: Record<string, { id: string; name: string; dept: Department; role: 'staff' | 'manager' }> = {
+    staff: { id: 'st-1', name: 'Maria Vella', dept: 'Housekeeping', role: 'staff' },
+    staff2: { id: 'st-2', name: 'Daniel Zahra', dept: 'Maintenance', role: 'staff' },
+    staff3: { id: 'st-3', name: 'Lucia Grech', dept: 'Concierge', role: 'staff' },
+    staff4: { id: 'st-4', name: 'Marco Bonnici', dept: 'Food & Beverage', role: 'staff' },
+    staff5: { id: 'st-5', name: 'Elena Borg', dept: 'Spa & Wellness', role: 'staff' },
+    manager: { id: 'st-mgr', name: 'Antoine Caruana', dept: 'Front Desk', role: 'manager' },
+  };
 
-  if (cleanUsername === 'manager') {
+  if (fallbackMap[cleanUsername]) {
+    const member = fallbackMap[cleanUsername];
     const authData: StaffAuthData = {
-      staffId: 'st-4',
-      name: 'Antoine Caruana',
-      role: 'manager',
-      department: 'Front Desk',
+      staffId: member.id,
+      name: member.name,
+      role: member.role,
+      department: member.dept,
       hotelId: 'a0000000-0000-0000-0000-000000000001',
     };
     localStorage.setItem(STAFF_SESSION_KEY, JSON.stringify(authData));

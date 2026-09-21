@@ -690,25 +690,67 @@ function RequestsTab({
 
                 {/* Inline assign picker */}
                 {assignAction?.requestId === r.id && (
-                  <div className="mt-3 rounded-lg border border-ops-200 bg-ops-50 p-3 animate-slide-up">
-                    <p className="mb-2 text-xs font-medium text-ops-600">Assign to staff member:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {staffOnly.map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => handleAssign(r.id, s.id, `${s.first_name} ${s.last_name}`)}
-                          className="flex items-center gap-1.5 rounded-lg border border-ops-200 bg-white px-3 py-1.5 text-xs font-medium text-ops-700 transition-colors hover:border-ops-400 hover:bg-ops-100"
-                        >
-                          <User className="h-3 w-3" />
-                          {s.first_name} {s.last_name}
-                        </button>
-                      ))}
+                  <div className="mt-3 rounded-lg border border-ops-200 bg-ops-50 p-3.5 animate-slide-up">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-xs font-semibold text-ops-800">Assign to Staff Member</p>
+                        <p className="text-[11px] text-ops-500">Choose from the 5 department staff members below:</p>
+                      </div>
                       <button
                         onClick={() => setAssignAction(null)}
-                        className="text-xs text-ops-400 hover:text-ops-600 px-2"
+                        className="text-xs text-ops-400 hover:text-ops-600 px-2 py-0.5 rounded hover:bg-ops-100"
                       >
                         Cancel
                       </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                      {staffOnly.map((s) => {
+                        const fullName = `${s.first_name} ${s.last_name}`;
+                        const dept = s.departmentName || 'General';
+                        const isCurrent = r.assignedStaffName?.toLowerCase() === fullName.toLowerCase() || r.assignedTo === s.id;
+                        const activeCount = requests.filter(
+                          (req) =>
+                            (req.assignedTo === s.id || req.assignedStaffName?.toLowerCase() === fullName.toLowerCase()) &&
+                            req.status !== 'Completed' &&
+                            req.status !== 'Cancelled'
+                        ).length;
+                        const isMatch =
+                          (r.category && dept.toLowerCase().includes(r.category.toLowerCase())) ||
+                          (r.category && r.category.toLowerCase().includes(dept.toLowerCase())) ||
+                          (r.category?.toLowerCase() === 'room service' && dept === 'Food & Beverage');
+
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => handleAssign(r.id, s.id, fullName)}
+                            className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all ${
+                              isCurrent
+                                ? 'border-indigo-400 bg-indigo-50 ring-1 ring-indigo-400'
+                                : isMatch
+                                ? 'border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-400'
+                                : 'border-ops-200 bg-white hover:bg-ops-100 hover:border-ops-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="font-semibold text-xs text-ops-900 flex items-center gap-1.5">
+                                <User className="h-3.5 w-3.5 text-ops-500" />
+                                {fullName}
+                              </span>
+                              {isMatch && (
+                                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded">
+                                  Match
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 flex items-center justify-between w-full text-[11px] text-ops-500">
+                              <span className="truncate">{dept}</span>
+                              <span className="font-mono text-[10px] text-ops-400">
+                                {activeCount === 0 ? 'Free' : `${activeCount} active`}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

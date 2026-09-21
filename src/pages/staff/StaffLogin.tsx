@@ -100,9 +100,16 @@ export function StaffLogin() {
             </button>
           </form>
 
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            <DemoButton label="Staff" creds="staff / staff123" onClick={() => { setUsername('staff'); setPassword('staff123'); }} />
-            <DemoButton label="Manager" creds="manager / manager123" onClick={() => { setUsername('manager'); setPassword('manager123'); }} />
+          <div className="mt-5 space-y-2">
+            <p className="text-center text-xs font-medium text-ops-400">Quick Demo Logins</p>
+            <div className="grid grid-cols-3 gap-2">
+              <DemoButton label="Maria (HK)" creds="staff" onClick={() => { setUsername('staff'); setPassword('staff123'); }} />
+              <DemoButton label="Daniel (Maint)" creds="staff2" onClick={() => { setUsername('staff2'); setPassword('staff123'); }} />
+              <DemoButton label="Lucia (Concierge)" creds="staff3" onClick={() => { setUsername('staff3'); setPassword('staff123'); }} />
+              <DemoButton label="Marco (F&B)" creds="staff4" onClick={() => { setUsername('staff4'); setPassword('staff123'); }} />
+              <DemoButton label="Elena (Spa)" creds="staff5" onClick={() => { setUsername('staff5'); setPassword('staff123'); }} />
+              <DemoButton label="Antoine (Manager)" creds="manager" onClick={() => { setUsername('manager'); setPassword('manager123'); }} />
+            </div>
           </div>
         </div>
       </div>
@@ -113,11 +120,12 @@ export function StaffLogin() {
 function DemoButton({ label, creds, onClick }: { label: string; creds: string; onClick: () => void }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="rounded-lg border border-ops-100 bg-ops-50 px-3 py-2 text-center transition-colors hover:bg-ops-100"
+      className="rounded-lg border border-ops-100 bg-ops-50 px-2 py-1.5 text-center transition-colors hover:border-ops-300 hover:bg-ops-100"
     >
-      <p className="text-xs font-semibold text-ops-700">{label}</p>
-      <p className="mt-0.5 text-[10px] text-ops-400">{creds}</p>
+      <p className="text-[11px] font-semibold text-ops-700 truncate">{label}</p>
+      <p className="text-[10px] text-ops-400 font-mono">{creds}</p>
     </button>
   );
 }
