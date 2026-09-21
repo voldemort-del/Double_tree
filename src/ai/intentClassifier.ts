@@ -64,16 +64,20 @@ export function classifyIntent(message: string, _context?: ConciergeContext): Cl
     }
   }
 
-  // 3. Check General Conversation / Gratitude
-  if (/^(thanks|thank you|thx|cheers|appreciated|many thanks|perfect thanks)[.!]?$/i.test(lower) ||
-      /^(hi|hello|hey|good (morning|afternoon|evening)|howdy)[.!]?$/i.test(lower) ||
-      /^(ok|okay|sounds good|understood|great|awesome|bye|goodbye)[.!]?$/i.test(lower)) {
+  // 3. Check General Conversation, Self-Identity, Greetings & Gratitude
+  if (
+    /^(thanks|thank you|thx|cheers|appreciated|many thanks|perfect thanks)[.!]?$/i.test(lower) ||
+    /^(hi|hello|hey|good (morning|afternoon|evening)|howdy)[.!, ]*.*$/i.test(lower) ||
+    /^(ok|okay|sounds good|understood|great|awesome|bye|goodbye)[.!]?$/i.test(lower) ||
+    /\b(how are you|how are you doing|how('?s| is) it going|how do you do|how r u)\b/i.test(lower) ||
+    /\b(who are you|what are you|what can you do|tell me about yourself|introduce yourself|what is your role|what is your name|your purpose|what do you do)\b/i.test(lower)
+  ) {
     return {
       intent: 'general_conversation',
-      confidence: 0.95,
+      confidence: 0.98,
       isUrgent: false,
       isQuestion: false,
-      matchedKeywords: [lower],
+      matchedKeywords: ['general_conversation'],
     };
   }
 

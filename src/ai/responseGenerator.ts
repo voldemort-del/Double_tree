@@ -26,21 +26,31 @@ export async function generateResponse(
     return `You can view the real-time status and staff assignment of all your active requests in the Requests tab above. Please let me know if you need any additional help!`;
   }
 
-  // 3. General Conversation & Greetings
+  // 3. General Conversation, Greetings & Self-Identity
   if (classified.intent === 'general_conversation') {
     if (/thanks|thank you|thx|cheers|appreciated/i.test(lower)) {
       return `You're very welcome, ${firstName}! Please let me know if there's anything else I can do to make your stay comfortable.`;
     }
+
+    if (/how are you|how are you doing|how('?s| is) it going|how do you do|how r u/i.test(lower)) {
+      return `I am doing wonderfully, thank you for asking, ${firstName}! I am your personal digital concierge here at DoubleTree by Hilton Malta, here to serve and attend to your needs or requests throughout your stay in ${room}. Whether you would like to order in-room dining from our restaurant & bar menu, schedule a relaxing massage at Myoka Spa, reserve a pool or gym session, or request fresh towels from housekeeping, I am here to assist you 24/7. How may I help you today?`;
+    }
+
+    if (/who are you|what are you|what can you do|tell me about yourself|introduce yourself|what is your role|what is your name/i.test(lower)) {
+      return `Hello ${firstName}! I am your personal digital concierge for DoubleTree by Hilton Malta, here to serve and attend to your needs and requests throughout your stay. I can assist you with ordering food and beverages from our Azure Restaurant and Bar menus, booking treatments at Myoka 5 Senses Spa, arranging housekeeping services (like extra towels or toiletries), submitting maintenance requests, or answering questions about our pools and hotel facilities. What would you like to arrange today?`;
+    }
+
     if (/good morning/i.test(lower)) {
-      return `Good morning, ${firstName}! How may I assist you today?`;
+      return `Good morning, ${firstName}! I am your personal concierge at DoubleTree by Hilton Malta, here to attend to your needs. How may I assist you today?`;
     }
     if (/good afternoon/i.test(lower)) {
-      return `Good afternoon, ${firstName}! How can I assist with your stay today?`;
+      return `Good afternoon, ${firstName}! I am your personal concierge at DoubleTree by Hilton Malta, ready to assist you. How can I help with your stay today?`;
     }
     if (/good evening/i.test(lower)) {
-      return `Good evening, ${firstName}! I hope you're enjoying your evening. How can I help?`;
+      return `Good evening, ${firstName}! I am your personal concierge at DoubleTree by Hilton Malta, here to ensure your evening is relaxing. How can I assist you?`;
     }
-    return `Hello ${firstName}! I'm your digital concierge. How can I assist you with your stay at DoubleTree by Hilton Malta?`;
+
+    return `Hello ${firstName}! I am your personal digital concierge at DoubleTree by Hilton Malta, here to serve and attend to your needs and requests throughout your stay in ${room}. How may I assist you today?`;
   }
 
   // 4. Hotel Knowledge / Informational Queries

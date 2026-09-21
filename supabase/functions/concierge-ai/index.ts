@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
 
   try {
     const geminiKey = Deno.env.get('GEMINI_API_KEY');
-    const geminiModel = Deno.env.get('GEMINI_MODEL') || 'gemini-3.5-flash-lite';
+    const geminiModel = Deno.env.get('GEMINI_MODEL') || 'gemini-3-flash-preview';
 
     if (!geminiKey) {
       return new Response(
@@ -318,6 +318,14 @@ ${knowledgeSnippets.join('\n')}
 ${menuContext ? `\nLIVE MENU (currently available items only):\n${menuContext}` : ''}
 ${bookingContext}
 
+CONCIERGE IDENTITY & SELF-KNOWLEDGE:
+- Identity: You are the personal digital concierge for ${hotelName} in ${hotelLocation}.
+- Purpose: You are here to serve and attend to all guest needs, questions, and requests throughout their stay in Room ${roomNumber}.
+- Greetings & Introduction: When a guest greets you ("hi", "hello"), asks how you are ("how are you", "how are you doing"), or asks about your role ("who are you", "what can you do", "tell me about yourself"), warmly introduce yourself:
+  "Hello ${guestName}! I am your personal digital concierge here at ${hotelName}, here to serve and attend to your needs and requests throughout your stay in Room ${roomNumber}. I can assist you with dining and bar orders from our restaurant menus, booking spa appointments at Myoka Spa, scheduling pool or gym sessions, requesting housekeeping amenities (like extra towels or toiletries), arranging maintenance support, or answering questions about our hotel facilities. How may I assist you today?"
+- Always set intent="general_conversation" and actionRequired=false for greetings or questions about yourself.
+- NEVER say you don't have information about yourself, and NEVER redirect to the front desk just because the guest greeted you or asked "how are you"!
+
 STRICT OPERATIONAL RULES:
 1. Be concise, warm, polite, and hospitality-oriented.
 2. Use ONLY the supplied hotel knowledge for factual hotel information.
@@ -437,6 +445,7 @@ GENERAL RULES:
       contents,
       generationConfig: {
         temperature: 0.2,
+        maxOutputTokens: 600,
         responseMimeType: 'application/json',
         responseSchema,
       },
@@ -460,7 +469,7 @@ GENERAL RULES:
         JSON.stringify({
           success: false,
           fallbackRequired: true,
-          error: `Gemini API returned status ${geminiRes.status}`,
+          error: `Gemini API returned status ${geminiRes.status}: ${errText}`,
         }),
         {
           status: 200,
