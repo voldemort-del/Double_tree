@@ -1,6 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+  /* Deep Navy */
+  --navy-900: #0f1e35;
+  --navy-800: #1e3050;
+  --navy-700: #294061;
+  --navy-600: #355275;
+  --navy-500: #456890;
+
+  /* Warm Gold */
+  --gold-600: #9e641a;
+  --gold-500: #c08020;
+  --gold-400: #d9a232;
+  --gold-300: #e5bc58;
+  --gold-200: #f0d795;
+
+  /* Champagne surface */
+  --champagne-50:  #fdf9f2;
+  --champagne-100: #f8f0e0;
+
+  --accent-gold: #c08020;
+  --accent-gold-light: rgba(192,128,32,0.12);
+}
 
 @layer base {
   html {
@@ -10,25 +36,114 @@
   body {
     font-family: 'Inter', system-ui, sans-serif;
   }
+
+  /* Subtle gold focus ring across all interactive elements */
+  *:focus-visible {
+    outline: 2px solid var(--gold-400);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 @layer utilities {
+  /* ── Scrollbars ─────────────────────── */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+    scrollbar-color: rgba(15, 30, 53, 0.18) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.15);
-    border-radius: 3px;
+    background-color: rgba(15, 30, 53, 0.18);
+    border-radius: 99px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(15, 30, 53, 0.30);
+  }
+
+  /* ── Gold shimmer text effect ───────── */
+  .text-gold-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--gold-600) 0%,
+      var(--gold-300) 40%,
+      var(--gold-600) 60%,
+      var(--gold-400) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* ── Gold accent border ─────────────── */
+  .border-gold {
+    border-color: var(--gold-400);
+  }
+
+  /* ── Navy glass card ────────────────── */
+  .card-navy {
+    background: rgba(30, 48, 80, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(229, 188, 88, 0.15);
+  }
+
+  /* ── Champagne glass card (guest UI) ── */
+  .card-champagne {
+    background: rgba(253, 249, 242, 0.90);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(192, 128, 32, 0.12);
+  }
+
+  /* ── Premium button ─────────────────── */
+  .btn-gold {
+    background: linear-gradient(135deg, #c08020 0%, #d9a232 60%, #c08020 100%);
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: filter 0.2s, transform 0.15s;
+  }
+  .btn-gold:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+  .btn-gold:active {
+    transform: translateY(0);
+    filter: brightness(0.96);
+  }
+
+  /* ── Navy button ────────────────────── */
+  .btn-navy {
+    background: linear-gradient(135deg, #1e3050 0%, #294061 100%);
+    color: #fff;
+    font-weight: 600;
+    transition: filter 0.2s, transform 0.15s;
+  }
+  .btn-navy:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+  }
+
+  /* ── Gold divider line ──────────────── */
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-300), transparent);
+    opacity: 0.5;
+  }
+
+  /* ── Subtle navy gradient background ── */
+  .bg-navy-gradient {
+    background: linear-gradient(160deg, #0f1e35 0%, #1e3050 50%, #294061 100%);
+  }
+
+  /* ── Champagne page background ──────── */
+  .bg-champagne-gradient {
+    background: radial-gradient(ellipse at 30% 0%, #f8f0e0 0%, #fdf9f2 60%);
   }
 }
