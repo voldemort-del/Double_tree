@@ -115,12 +115,12 @@ export function StaffLogin() {
             <div className="divider-gold" />
             <p className="text-center text-[11px] font-medium text-ops-400 pt-1">Quick Demo Logins</p>
             <div className="grid grid-cols-3 gap-2">
-              <DemoButton label="Maria" sub="Housekeeping" onClick={() => { setUsername('staff');   setPassword('staff123'); }} />
-              <DemoButton label="Daniel" sub="Maintenance"  onClick={() => { setUsername('staff2');  setPassword('staff123'); }} />
-              <DemoButton label="Lucia"  sub="Concierge"   onClick={() => { setUsername('staff3');  setPassword('staff123'); }} />
-              <DemoButton label="Marco"  sub="Food & Bev"  onClick={() => { setUsername('staff4');  setPassword('staff123'); }} />
-              <DemoButton label="Elena"  sub="Spa"         onClick={() => { setUsername('staff5');  setPassword('staff123'); }} />
-              <DemoButton label="Antoine" sub="Manager"    onClick={() => { setUsername('manager'); setPassword('manager123'); }} isManager />
+              <DemoButton label="Marco"   sub="Kitchen"  onClick={() => { setUsername('staff');   setPassword('staff123'); }} />
+              <DemoButton label="Elena"   sub="Kitchen"  onClick={() => { setUsername('staff2');  setPassword('staff123'); }} />
+              <DemoButton label="Lucia"   sub="Kitchen"  onClick={() => { setUsername('staff3');  setPassword('staff123'); }} />
+              <DemoButton label="Daniel"  sub="Kitchen"  onClick={() => { setUsername('staff4');  setPassword('staff123'); }} />
+              <DemoButton label="Maria"   sub="Kitchen"  onClick={() => { setUsername('staff5');  setPassword('staff123'); }} />
+              <DemoButton label="Antoine" sub="Manager"  onClick={() => { setUsername('manager'); setPassword('manager123'); }} isManager />
             </div>
           </div>
         </div>

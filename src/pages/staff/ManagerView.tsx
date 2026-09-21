@@ -688,63 +688,11 @@ function RequestsTab({
                   </div>
                 )}
 
-                {/* Inline assign picker */}
+                {/* Inline assign picker — Dropdown */}
                 {assignAction?.requestId === r.id && (() => {
-                  const requestDept = r.department;
-                  const matchedStaff = staffOnly.filter((s) => s.departmentName === requestDept);
-                  const otherStaff = staffOnly.filter((s) => s.departmentName !== requestDept);
-
-                  const StaffCard = ({ s, isCurrentlyAssigned }: { s: typeof staffOnly[0]; isCurrentlyAssigned: boolean }) => {
-                    const fullName = `${s.first_name} ${s.last_name}`;
-                    const dept = s.departmentName || 'General';
-                    const activeCount = requests.filter(
-                      (req) =>
-                        (req.assignedTo === s.id || req.assignedStaffName?.toLowerCase() === fullName.toLowerCase()) &&
-                        req.status !== 'Completed' &&
-                        req.status !== 'Cancelled'
-                    ).length;
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={() => handleAssign(r.id, s.id, fullName)}
-                        className={`flex items-center gap-3 w-full text-left p-3 rounded-xl border transition-all ${
-                          isCurrentlyAssigned
-                            ? 'border-indigo-400 bg-indigo-50 ring-1 ring-indigo-300'
-                            : 'border-ops-200 bg-white hover:border-ops-400 hover:bg-ops-50'
-                        }`}
-                      >
-                        <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
-                          dept === 'Housekeeping' ? 'bg-sky-500' :
-                          dept === 'Maintenance' ? 'bg-orange-500' :
-                          dept === 'Concierge' ? 'bg-purple-500' :
-                          dept === 'Food & Beverage' ? 'bg-amber-500' :
-                          dept === 'Spa & Wellness' ? 'bg-emerald-500' :
-                          'bg-ops-500'
-                        }`}>
-                          {initials(fullName)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-ops-900 truncate">{fullName}</p>
-                          <p className="text-[11px] text-ops-500">{dept}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          {isCurrentlyAssigned ? (
-                            <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full">Current</span>
-                          ) : (
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                              activeCount === 0
-                                ? 'text-emerald-700 bg-emerald-100'
-                                : activeCount >= 3
-                                ? 'text-red-600 bg-red-50'
-                                : 'text-ops-500 bg-ops-100'
-                            }`}>
-                              {activeCount === 0 ? 'Free' : `${activeCount} active`}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  };
+                  const kitchenStaff = staffOnly.filter((s) => s.departmentName === 'Food & Beverage');
+                  const otherStaff   = staffOnly.filter((s) => s.departmentName !== 'Food & Beverage');
+                  const allPooled    = [...kitchenStaff, ...otherStaff];
 
                   return (
                     <div className="mt-3 rounded-xl border border-ops-200 bg-white shadow-sm overflow-hidden animate-slide-up">
@@ -753,7 +701,7 @@ function RequestsTab({
                         <div>
                           <p className="text-xs font-bold text-ops-900">Assign to Staff</p>
                           <p className="text-[11px] text-ops-500 mt-0.5">
-                            This is a <span className="font-semibold text-ops-700">{r.department}</span> request — suggested staff are highlighted below
+                            <span className="font-semibold text-amber-700">Kitchen / {r.department}</span> order — select a staff member on duty
                           </p>
                         </div>
                         <button
@@ -764,43 +712,90 @@ function RequestsTab({
                         </button>
                       </div>
 
-                      <div className="p-3 space-y-3">
-                        {/* Suggested: same department */}
-                        {matchedStaff.length > 0 && (
-                          <div>
-                            <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Suggested — {r.department} Department
-                            </p>
-                            <div className="space-y-1.5">
-                              {matchedStaff.map((s) => (
-                                <StaffCard
-                                  key={s.id}
-                                  s={s}
-                                  isCurrentlyAssigned={r.assignedTo === s.id || r.assignedStaffName?.toLowerCase() === `${s.first_name} ${s.last_name}`.toLowerCase()}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                      <div className="p-4">
+                        {/* Staff workload quick glance */}
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          {allPooled.map((s) => {
+                            const fullName = `${s.first_name} ${s.last_name}`;
+                            const activeCount = requests.filter(
+                              (req) =>
+                                (req.assignedTo === s.id || req.assignedStaffName?.toLowerCase() === fullName.toLowerCase()) &&
+                                req.status !== 'Completed' &&
+                                req.status !== 'Cancelled'
+                            ).length;
+                            return (
+                              <span
+                                key={s.id}
+                                className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium border ${
+                                  activeCount === 0
+                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                    : activeCount >= 3
+                                    ? 'border-red-200 bg-red-50 text-red-600'
+                                    : 'border-ops-200 bg-ops-50 text-ops-600'
+                                }`}
+                              >
+                                <span className={`h-1.5 w-1.5 rounded-full ${
+                                  activeCount === 0 ? 'bg-emerald-400' : activeCount >= 3 ? 'bg-red-400' : 'bg-ops-400'
+                                }`} />
+                                {s.first_name} — {activeCount === 0 ? 'Free' : `${activeCount} active`}
+                              </span>
+                            );
+                          })}
+                        </div>
 
-                        {/* Other staff */}
-                        {otherStaff.length > 0 && (
-                          <div>
-                            <p className="text-[11px] font-semibold text-ops-400 uppercase tracking-wide mb-1.5">
-                              Other Staff
-                            </p>
-                            <div className="space-y-1.5">
-                              {otherStaff.map((s) => (
-                                <StaffCard
-                                  key={s.id}
-                                  s={s}
-                                  isCurrentlyAssigned={r.assignedTo === s.id || r.assignedStaffName?.toLowerCase() === `${s.first_name} ${s.last_name}`.toLowerCase()}
-                                />
-                              ))}
-                            </div>
+                        {/* Dropdown + confirm */}
+                        <div className="flex items-center gap-2">
+                          <div className="relative flex-1">
+                            <UtensilsCrossed className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-500 pointer-events-none" />
+                            <select
+                              defaultValue={r.assignedTo ?? ''}
+                              id={`assign-select-${r.id}`}
+                              className="w-full appearance-none rounded-lg border border-ops-200 bg-ops-50 py-2.5 pl-9 pr-8 text-sm font-medium text-ops-900 outline-none transition-colors focus:border-amber-400 focus:ring-2 focus:ring-amber-100 cursor-pointer"
+                            >
+                              <option value="" disabled>— Select a kitchen staff member —</option>
+                              {kitchenStaff.length > 0 && (
+                                <optgroup label="🍽️ Kitchen (Food & Beverage)">
+                                  {kitchenStaff.map((s) => {
+                                    const fullName = `${s.first_name} ${s.last_name}`;
+                                    const activeCount = requests.filter(
+                                      (req) =>
+                                        (req.assignedTo === s.id || req.assignedStaffName?.toLowerCase() === fullName.toLowerCase()) &&
+                                        req.status !== 'Completed' &&
+                                        req.status !== 'Cancelled'
+                                    ).length;
+                                    return (
+                                      <option key={s.id} value={s.id}>
+                                        {fullName} {activeCount === 0 ? '✓ Free' : `· ${activeCount} active`}
+                                      </option>
+                                    );
+                                  })}
+                                </optgroup>
+                              )}
+                              {otherStaff.length > 0 && (
+                                <optgroup label="Other Departments">
+                                  {otherStaff.map((s) => {
+                                    const fullName = `${s.first_name} ${s.last_name}`;
+                                    return (
+                                      <option key={s.id} value={s.id}>{fullName} ({s.departmentName})</option>
+                                    );
+                                  })}
+                                </optgroup>
+                              )}
+                            </select>
+                            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ops-400" />
                           </div>
-                        )}
+                          <button
+                            onClick={() => {
+                              const sel = document.getElementById(`assign-select-${r.id}`) as HTMLSelectElement;
+                              const staffId = sel?.value;
+                              const found = staffOnly.find((s) => s.id === staffId);
+                              if (found) handleAssign(r.id, found.id, `${found.first_name} ${found.last_name}`);
+                            }}
+                            className="flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+                          >
+                            <UserPlus className="h-3.5 w-3.5" /> Assign
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );

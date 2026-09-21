@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 2. Resolve verified context server-side
+    // 2. Resolve verified context server-side — parallel fetches to cut latency
     const { data: conv } = await supabase
       .from('conversations')
       .select('id, guest_id, stay_id')
@@ -105,60 +105,63 @@ Deno.serve(async (req) => {
     let hotelName = 'DoubleTree by Hilton Malta';
     let hotelLocation = "Qawra, St Paul's Bay, Malta";
     let hotelId = 'a0000000-0000-0000-0000-000000000001';
+    let recentMessages: { role: string; content: string }[] = [];
 
     if (conv) {
-      const { data: guest } = await supabase
-        .from('guests')
-        .select('first_name, last_name, hotel_id')
-        .eq('id', conv.guest_id)
-        .maybeSingle();
+      // Fetch guest and messages in parallel (stay lookup follows guest for hotelId)
+      const [guestResult, messagesResult] = await Promise.all([
+        supabase
+          .from('guests')
+          .select('first_name, last_name, hotel_id')
+          .eq('id', conv.guest_id)
+          .maybeSingle(),
+        supabase
+          .from('messages')
+          .select('sender_type, content, created_at')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: false })
+          .limit(8),
+      ]);
 
+      const guest = guestResult.data;
       if (guest) {
         guestName = `${guest.first_name} ${guest.last_name}`;
         if (guest.hotel_id) hotelId = guest.hotel_id;
       }
 
-      const { data: stay } = await supabase
-        .from('stays')
-        .select('room_id')
-        .eq('id', conv.stay_id)
-        .maybeSingle();
+      // Now fetch stay, hotel, and knowledge in parallel
+      const [stayResult, hotelResult] = await Promise.all([
+        supabase
+          .from('stays')
+          .select('room_id')
+          .eq('id', conv.stay_id)
+          .maybeSingle(),
+        supabase
+          .from('hotels')
+          .select('name, location')
+          .eq('id', hotelId)
+          .maybeSingle(),
+      ]);
 
-      if (stay?.room_id) {
+      if (hotelResult.data) {
+        hotelName = hotelResult.data.name;
+        hotelLocation = hotelResult.data.location;
+      }
+
+      if (stayResult.data?.room_id) {
         const { data: room } = await supabase
           .from('rooms')
           .select('room_number, room_type')
-          .eq('id', stay.room_id)
+          .eq('id', stayResult.data.room_id)
           .maybeSingle();
-
         if (room) {
           roomNumber = room.room_number;
           roomType = room.room_type;
         }
       }
 
-      const { data: hotel } = await supabase
-        .from('hotels')
-        .select('name, location')
-        .eq('id', hotelId)
-        .maybeSingle();
-
-      if (hotel) {
-        hotelName = hotel.name;
-        hotelLocation = hotel.location;
-      }
-    }
-
-    // 3. Retrieve recent conversation history (last 8 messages)
-    let recentMessages: { role: string; content: string }[] = [];
-    if (conv) {
-      const { data: dbMessages } = await supabase
-        .from('messages')
-        .select('sender_type, content, created_at')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: false })
-        .limit(8);
-
+      // Build conversation history from the parallel fetch above
+      const dbMessages = messagesResult.data;
       if (dbMessages && dbMessages.length > 0) {
         recentMessages = dbMessages
           .reverse()
@@ -168,6 +171,7 @@ Deno.serve(async (req) => {
           }));
       }
     }
+
 
     // 4. Detect what the message is about to fetch relevant context
     const lowerMsg = message.toLowerCase();
