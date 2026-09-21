@@ -9,7 +9,15 @@ export type Department =
   | 'Maintenance'
   | 'Food & Beverage'
   | 'Concierge'
-  | 'Spa & Wellness';
+  | 'Spa & Wellness'
+  | 'Pool & Recreation'
+  | 'Management';
+
+export type MenuVenue = 'restaurant' | 'bar' | 'room_service' | 'pool_bar';
+
+export type BookingServiceType = 'spa' | 'gym' | 'pool_session' | 'beach_club' | 'kids_club';
+
+export type BookingStatus = 'confirmed' | 'cancelled' | 'completed';
 
 export type RequestCategory =
   | 'Housekeeping'
@@ -167,3 +175,47 @@ export interface StaffSession {
 }
 
 export type Session = GuestSession | StaffSession | null;
+
+// ---- Menu Items ----
+
+export interface MenuItem {
+  id: string;
+  hotelId: string;
+  venue: MenuVenue;
+  category: string;
+  name: string;
+  description: string;
+  price: number;
+  available: boolean;
+  availableForRoomService: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ---- Bookings ----
+
+export interface Booking {
+  id: string;
+  hotelId: string;
+  guestId: string;
+  stayId: string;
+  requestId?: string;
+  serviceType: BookingServiceType;
+  serviceName: string;
+  bookingDate: string; // ISO date YYYY-MM-DD
+  startTime: string;   // HH:MM
+  durationMinutes: number;
+  capacity: number;
+  status: BookingStatus;
+  notes: string;
+  createdAt: string;
+}
+
+export interface BookingDetails {
+  serviceType: BookingServiceType;
+  serviceName: string;
+  date: string;       // YYYY-MM-DD
+  startTime: string;  // HH:MM
+  durationMinutes: number;
+}

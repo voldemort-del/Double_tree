@@ -66,6 +66,7 @@ export class GeminiConciergeProvider implements ConciergeProvider {
           response: a.response,
           missingInformation: Array.isArray(a.missingInformation) ? a.missingInformation : [],
           isExistingRequestAction: a.intent === 'existing_request_action',
+          bookingDetails: a.bookingDetails ?? undefined,
         };
       }
 

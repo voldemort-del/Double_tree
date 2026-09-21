@@ -35,6 +35,13 @@ export interface ConciergeAnalysis {
   response: string;
   missingInformation?: string[];
   isExistingRequestAction?: boolean;
+  bookingDetails?: {
+    serviceType: string;    // 'spa' | 'gym' | 'pool_session' | 'beach_club' | 'kids_club'
+    serviceName: string;    // e.g. 'Swedish Massage'
+    date: string;           // YYYY-MM-DD
+    startTime: string;      // HH:MM
+    durationMinutes: number;
+  };
 }
 
 export interface ConciergeResult {

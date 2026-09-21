@@ -6,8 +6,9 @@
 //
 // Privacy & Security:
 // - Never exposes GEMINI_API_KEY to browser/client code.
-// - Resolves authorized guest, stay, room, and hotel context server-side.
-// - Model produces structured intent/analysis; does NOT directly modify DB.
+// - Resolves authorized guest, stay, room, hotel context server-side.
+// - Fetches live menu items and booking availability server-side.
+// - Model produces structured intent/analysis; does NOT write to DB.
 // ============================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
@@ -22,6 +23,14 @@ interface RequestPayload {
   conversationId: string;
 }
 
+interface BookingDetails {
+  serviceType: string;
+  serviceName: string;
+  date: string;       // YYYY-MM-DD
+  startTime: string;  // HH:MM
+  durationMinutes: number;
+}
+
 interface ConciergeAnalysis {
   intent: string;
   department?: string | null;
@@ -33,6 +42,7 @@ interface ConciergeAnalysis {
   missingInformation?: string[];
   response: string;
   isExistingRequestAction?: boolean;
+  bookingDetails?: BookingDetails | null;
 }
 
 Deno.serve(async (req) => {
@@ -83,7 +93,6 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 2. Resolve verified context server-side
-    // Query conversation
     const { data: conv } = await supabase
       .from('conversations')
       .select('id, guest_id, stay_id')
@@ -94,11 +103,10 @@ Deno.serve(async (req) => {
     let roomNumber = '408';
     let roomType = 'Sea View King';
     let hotelName = 'DoubleTree by Hilton Malta';
-    let hotelLocation = 'Qawra, St Paul\'s Bay, Malta';
+    let hotelLocation = "Qawra, St Paul's Bay, Malta";
     let hotelId = 'a0000000-0000-0000-0000-000000000001';
 
     if (conv) {
-      // Query guest
       const { data: guest } = await supabase
         .from('guests')
         .select('first_name, last_name, hotel_id')
@@ -110,7 +118,6 @@ Deno.serve(async (req) => {
         if (guest.hotel_id) hotelId = guest.hotel_id;
       }
 
-      // Query stay & room
       const { data: stay } = await supabase
         .from('stays')
         .select('room_id')
@@ -130,10 +137,9 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Query hotel
       const { data: hotel } = await supabase
         .from('hotels')
-        .select('name, location, address')
+        .select('name, location')
         .eq('id', hotelId)
         .maybeSingle();
 
@@ -163,7 +169,27 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 4. Retrieve relevant hotel knowledge
+    // 4. Detect what the message is about to fetch relevant context
+    const lowerMsg = message.toLowerCase();
+
+    const isFoodRelated =
+      /food|eat|hungry|meal|dinner|lunch|breakfast|menu|restaurant|order|pasta|pizza|steak|fish|chicken|starter|main|dessert|room service/i.test(lowerMsg);
+    const isBarRelated =
+      /drink|bar|cocktail|wine|beer|juice|coffee|tea|alcohol|water|beverage|bottle|glass/i.test(lowerMsg);
+    const isSpaRelated =
+      /spa|massage|facial|treatment|wellness|myoka|scrub|manicure|pedicure|relaxation|body/i.test(lowerMsg);
+    const isGymRelated =
+      /gym|fitness|workout|exercise|training|weights/i.test(lowerMsg);
+    const isPoolRelated =
+      /pool|swim|aqua|swimming/i.test(lowerMsg);
+    const isBeachRelated =
+      /beach|beach club|sun bed|sunbed/i.test(lowerMsg);
+    const isKidsRelated =
+      /kids club|children|kids|child/i.test(lowerMsg);
+    const isBookingRelated =
+      isSpaRelated || isGymRelated || isPoolRelated || isBeachRelated || isKidsRelated;
+
+    // 5. Fetch relevant hotel knowledge
     let knowledgeSnippets: string[] = [];
     const { data: knowledgeRows } = await supabase
       .from('hotel_knowledge')
@@ -171,7 +197,6 @@ Deno.serve(async (req) => {
       .eq('hotel_id', hotelId);
 
     if (knowledgeRows && knowledgeRows.length > 0) {
-      const lowerMsg = message.toLowerCase();
       const matched = knowledgeRows.filter((item: any) => {
         const titleMatch = item.title?.toLowerCase().includes(lowerMsg);
         const contentMatch = item.content?.toLowerCase().includes(lowerMsg);
@@ -187,18 +212,91 @@ Deno.serve(async (req) => {
         (k: any) => `[${k.category} - ${k.title}]: ${k.content}`
       );
     } else {
-      // Core verified hotel knowledge fallback
       knowledgeSnippets = [
-        '[Hotel Identity]: DoubleTree by Hilton Malta is located along the seafront in Qawra, St Paul\'s Bay, Malta.',
+        "[Hotel Identity]: DoubleTree by Hilton Malta is located along the seafront in Qawra, St Paul's Bay, Malta.",
         '[Facilities]: 3 outdoor pools, 1 indoor heated pool, fitness centre, Kids Club, private beach club access.',
         '[Dining]: 6 dining venues: Azure Restaurant & Terrace (buffet & Mediterranean), Osteria Tropea, Limonata Pool Bar, The Moorings, Beach Club Bar, and In-Room Dining.',
         '[Spa]: Myoka 5 Senses Spa offering massages, facials, and wellness body treatments.',
       ];
     }
 
-    // 5. Build system prompt
+    // 6. Fetch live menu items (restaurant and/or bar if relevant)
+    let menuContext = '';
+    if (isFoodRelated || isBarRelated) {
+      const venuesToFetch: string[] = [];
+      if (isFoodRelated) venuesToFetch.push('restaurant');
+      if (isBarRelated) venuesToFetch.push('bar');
+
+      const { data: menuItems } = await supabase
+        .from('menu_items')
+        .select('venue, category, name, description, price, available_for_room_service')
+        .eq('hotel_id', hotelId)
+        .eq('available', true)
+        .in('venue', venuesToFetch)
+        .order('venue')
+        .order('category')
+        .order('display_order');
+
+      if (menuItems && menuItems.length > 0) {
+        // Group by venue and category for readable prompt context
+        const grouped: Record<string, Record<string, string[]>> = {};
+        for (const item of menuItems) {
+          if (!grouped[item.venue]) grouped[item.venue] = {};
+          if (!grouped[item.venue][item.category]) grouped[item.venue][item.category] = [];
+          const roomServiceTag = item.available_for_room_service ? ' [Room Service ✓]' : '';
+          grouped[item.venue][item.category].push(
+            `• ${item.name} — €${Number(item.price).toFixed(2)}${roomServiceTag}: ${item.description}`
+          );
+        }
+
+        const menuLines: string[] = [];
+        for (const [venue, categories] of Object.entries(grouped)) {
+          const venueName = venue === 'restaurant' ? 'AZURE RESTAURANT MENU' : 'BAR MENU (The Moorings / Limonata Pool Bar)';
+          menuLines.push(`\n${venueName}:`);
+          for (const [category, items] of Object.entries(categories)) {
+            menuLines.push(`  ${category}:`);
+            menuLines.push(...items.map(i => `    ${i}`));
+          }
+        }
+        menuContext = menuLines.join('\n');
+      }
+    }
+
+    // 7. Fetch today's bookings for conflict context (if booking-related)
+    let bookingContext = '';
+    if (isBookingRelated) {
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+      const { data: existingBookings } = await supabase
+        .from('bookings')
+        .select('service_type, service_name, booking_date, start_time, duration_minutes')
+        .eq('hotel_id', hotelId)
+        .eq('status', 'confirmed')
+        .in('booking_date', [today, tomorrow])
+        .order('booking_date')
+        .order('start_time');
+
+      if (existingBookings && existingBookings.length > 0) {
+        const bookingLines = existingBookings.map(
+          (b: any) =>
+            `  - ${b.service_name} on ${b.booking_date} at ${b.start_time} (${b.duration_minutes}min)`
+        );
+        bookingContext = `\nCURRENT BOOKINGS (for conflict awareness — do NOT share guest details):\n${bookingLines.join('\n')}\nNote: Spa capacity is 1 per slot. Gym capacity is 10. Pool sessions capacity is 5.`;
+      } else {
+        bookingContext = '\nCURRENT BOOKINGS: No bookings on file for today/tomorrow — all slots open.';
+      }
+    }
+
+    // 8. Build today's date context for the model
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+    // 9. Build system prompt
     const systemPrompt = `You are the digital concierge for ${hotelName} in ${hotelLocation}.
-You assist in-house guests with their stay, information, and room service/maintenance requests.
+You assist in-house guests with their stay, dining, activity bookings, and service requests.
+Today's date: ${todayStr}. Tomorrow: ${tomorrowStr}.
 
 AUTHENTICATED GUEST CONTEXT:
 - Guest Name: ${guestName}
@@ -207,28 +305,41 @@ AUTHENTICATED GUEST CONTEXT:
 
 OFFICIAL HOTEL KNOWLEDGE (AUTHORITATIVE SOURCE OF TRUTH):
 ${knowledgeSnippets.join('\n')}
+${menuContext ? `\nLIVE MENU (currently available items only):\n${menuContext}` : ''}
+${bookingContext}
 
 STRICT OPERATIONAL RULES:
 1. Be concise, warm, polite, and hospitality-oriented.
 2. Use ONLY the supplied hotel knowledge for factual hotel information.
-3. NEVER invent or guess facts, opening hours, prices, or policies. If specific hours or pricing are not provided in the knowledge base, state politely that the exact schedule or pricing is not configured in the system and recommend checking with the Front Desk.
-4. NEVER claim a booking or reservation is confirmed unless the application has created one.
-5. NEVER claim an operational task has been completed; state that the request has been forwarded to the appropriate team.
-6. NEVER ask the guest for their room number; you already know they are in Room ${roomNumber}.
-7. For operational requests (extra towels, toiletries, maintenance, AC, plumbing, room service, spa booking inquiries, taxi transfers, luggage):
-   - Set actionRequired: true
-   - Set department to one of: "Front Desk", "Housekeeping", "Maintenance", "Food & Beverage", "Concierge", "Spa & Wellness", "Pool & Recreation"
-   - Set priority to "Low", "Normal", "High", or "Urgent" (climate/plumbing faults are "High"; smoke/fire/gas/medical are "Urgent")
-   - Formulate a clear, concise title and description
-8. Missing Information: If an order or booking lacks essential details (e.g. food order without menu items, or a massage booking without preferred timing), list the missing items in missingInformation and ask a polite clarifying question in the response.
-9. Emergencies: For smoke, fire, gas, or medical emergencies, advise immediate contact with emergency services (dial 112 in Malta) and alert the Front Desk. Set priority: "Urgent", department: "Front Desk", actionRequired: true.
-10. Existing Request Action: If the guest wants to cancel or check status of a previous request, set intent: "existing_request_action" and actionRequired: false, directing them to check the Requests tab.
-11. Return strictly a JSON object matching the requested schema.`;
+3. NEVER invent or guess facts, opening hours, prices, or policies not in the knowledge base.
+4. NEVER claim a booking is confirmed unless all details have been collected and actionRequired=true.
+5. NEVER claim an operational task has been completed — state it has been forwarded to the relevant team.
+6. NEVER ask the guest for their room number — you already know they are in Room ${roomNumber}.
 
-    // 6. Build Gemini contents
+FOOD & BEVERAGE ORDERING RULES:
+7. When a guest wants to order food or drinks, ALWAYS present relevant items from the LIVE MENU above.
+8. NEVER assume or guess what the guest wants — always ask them to choose from the menu.
+9. Once the guest specifies their order items and quantities, set actionRequired=true, department="Food & Beverage".
+10. If the guest is asking for room service, only offer items marked [Room Service ✓].
+11. Include the full order details (items, quantities, prices) in the description field.
+
+BOOKING RULES (Spa, Gym, Pool, Beach Club, Kids Club):
+12. When a guest wants to book a service, ALWAYS ask for their preferred date and time if not provided.
+13. Once the guest provides a preferred time, check the bookings context above for conflicts.
+14. If a conflict exists (spa capacity=1, gym capacity=10, pool=5), inform the guest and ask for an alternative time. Do NOT set actionRequired=true.
+15. If the slot is available, set actionRequired=true and populate the bookingDetails field with the exact date/time/service.
+16. For spa bookings, typical durations: Swedish Massage=60min, Hot Stone=90min, Facial=60min, Couples Massage=90min.
+17. Gym sessions and pool sessions: 60min duration by default.
+
+GENERAL RULES:
+18. Missing Information: If an order or booking lacks essential details, list the missing items in missingInformation and ask politely.
+19. Emergencies: Smoke/fire/gas/medical — advise dial 112 (Malta) and alert Front Desk. Set priority="Urgent", department="Front Desk", actionRequired=true.
+20. Existing Request Action: For cancellation/status requests, set intent="existing_request_action", actionRequired=false, direct to Requests tab.
+21. Return ONLY a JSON object matching the requested schema.`;
+
+    // 10. Build Gemini contents
     const contents: any[] = [];
 
-    // Include recent conversational history (up to last 6 turns)
     for (const msg of recentMessages.slice(-6)) {
       contents.push({
         role: msg.role === 'user' ? 'user' : 'model',
@@ -236,13 +347,12 @@ STRICT OPERATIONAL RULES:
       });
     }
 
-    // Add current user message
     contents.push({
       role: 'user',
       parts: [{ text: message }],
     });
 
-    // 7. Structured JSON response schema
+    // 11. Structured JSON response schema (including bookingDetails)
     const responseSchema = {
       type: 'OBJECT',
       properties: {
@@ -289,11 +399,24 @@ STRICT OPERATIONAL RULES:
           items: { type: 'STRING' },
         },
         response: { type: 'STRING' },
+        bookingDetails: {
+          type: 'OBJECT',
+          properties: {
+            serviceType: {
+              type: 'STRING',
+              enum: ['spa', 'gym', 'pool_session', 'beach_club', 'kids_club'],
+            },
+            serviceName: { type: 'STRING' },
+            date: { type: 'STRING' },
+            startTime: { type: 'STRING' },
+            durationMinutes: { type: 'NUMBER' },
+          },
+        },
       },
       required: ['intent', 'actionRequired', 'confidence', 'response'],
     };
 
-    // 8. Call Gemini REST API with 10-second timeout
+    // 12. Call Gemini REST API with 15-second timeout
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`;
 
     const geminiBody = {
@@ -309,7 +432,7 @@ STRICT OPERATIONAL RULES:
     };
 
     const abortCtrl = new AbortController();
-    const timeoutId = setTimeout(() => abortCtrl.abort(), 10000);
+    const timeoutId = setTimeout(() => abortCtrl.abort(), 15000);
 
     const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
@@ -371,6 +494,19 @@ STRICT OPERATIONAL RULES:
         parsed.response ||
         `Certainly, ${guestName.split(' ')[0]}. I've noted your request for Room ${roomNumber}.`,
       isExistingRequestAction: parsed.intent === 'existing_request_action',
+      bookingDetails:
+        parsed.bookingDetails &&
+        parsed.bookingDetails.serviceType &&
+        parsed.bookingDetails.date &&
+        parsed.bookingDetails.startTime
+          ? {
+              serviceType: parsed.bookingDetails.serviceType,
+              serviceName: parsed.bookingDetails.serviceName || '',
+              date: parsed.bookingDetails.date,
+              startTime: parsed.bookingDetails.startTime,
+              durationMinutes: parsed.bookingDetails.durationMinutes || 60,
+            }
+          : undefined,
     };
 
     return new Response(

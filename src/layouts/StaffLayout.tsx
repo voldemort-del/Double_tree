@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { RouterLink, navigate } from '@/utils/router';
-import { LogOut, LayoutDashboard, ClipboardList, BarChart3, Waves } from 'lucide-react';
+import { LogOut, LayoutDashboard, ClipboardList, BarChart3, Waves, UtensilsCrossed } from 'lucide-react';
 import { ConnectionIndicator } from '@/components/ConnectionIndicator';
 import { ToastContainer } from '@/components/ToastContainer';
 
@@ -34,6 +34,7 @@ export function StaffLayout({ children }: { children: ReactNode }) {
             <nav className="hidden items-center gap-1 sm:flex">
               <StaffNavLink to="/staff/dashboard" active={path.startsWith('/staff/dashboard')} icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
               <StaffNavLink to="/staff/requests" active={path.startsWith('/staff/requests')} icon={<ClipboardList className="h-4 w-4" />} label="Requests" />
+              <StaffNavLink to="/staff/menu" active={path.startsWith('/staff/menu')} icon={<UtensilsCrossed className="h-4 w-4" />} label="Menu" />
               {isManager && (
                 <StaffNavLink to="/staff/manager" active={path.startsWith('/staff/manager')} icon={<BarChart3 className="h-4 w-4" />} label="Manager" />
               )}
@@ -61,6 +62,7 @@ export function StaffLayout({ children }: { children: ReactNode }) {
         <nav className="flex items-center gap-1 border-t border-ops-100 px-4 py-1.5 sm:hidden">
           <StaffNavLink to="/staff/dashboard" active={path.startsWith('/staff/dashboard')} icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
           <StaffNavLink to="/staff/requests" active={path.startsWith('/staff/requests')} icon={<ClipboardList className="h-4 w-4" />} label="Requests" />
+          <StaffNavLink to="/staff/menu" active={path.startsWith('/staff/menu')} icon={<UtensilsCrossed className="h-4 w-4" />} label="Menu" />
           {isManager && (
             <StaffNavLink to="/staff/manager" active={path.startsWith('/staff/manager')} icon={<BarChart3 className="h-4 w-4" />} label="Manager" />
           )}
