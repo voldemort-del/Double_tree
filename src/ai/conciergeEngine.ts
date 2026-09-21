@@ -35,8 +35,24 @@ export class DeterministicConciergeProvider implements ConciergeProvider {
   }
 }
 
-// Active provider instance (can be swapped with an LLM provider when configured)
-export const conciergeEngine: ConciergeProvider = new DeterministicConciergeProvider();
+import { GeminiConciergeProvider } from './geminiProvider';
+
+// Active provider instance (Gemini LLM by default with automatic deterministic fallback)
+let activeProvider: ConciergeProvider = new GeminiConciergeProvider(new DeterministicConciergeProvider());
+
+export function setConciergeProvider(provider: ConciergeProvider) {
+  activeProvider = provider;
+}
+
+export function getConciergeProvider(): ConciergeProvider {
+  return activeProvider;
+}
+
+export const conciergeEngine: ConciergeProvider = {
+  analyzeAndRespond: (message: string, context: ConciergeContext) => {
+    return activeProvider.analyzeAndRespond(message, context);
+  },
+};
 
 /**
  * Convenience helper to process a message with the active engine

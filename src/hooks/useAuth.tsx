@@ -29,19 +29,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [staffData, setStaffData] = useState<StaffAuthData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Restore session from localStorage on mount
+  const syncSessionFromStorage = useCallback(() => {
     const guest = getStoredGuestSession();
     const staff = getStoredStaffSession();
-    if (guest) {
-      setGuestData(guest);
-      setSession({ type: 'guest', guestId: guest.guestId, name: guest.name, roomNumber: guest.roomNumber });
-    } else if (staff) {
-      setStaffData(staff);
-      setSession({ type: staff.role, staffId: staff.staffId, name: staff.name, role: staff.role, department: staff.department });
+    setGuestData(guest);
+    setStaffData(staff);
+
+    const loc = (window.location.hash || window.location.pathname).toLowerCase();
+    const isStaffRoute = loc.includes('staff');
+
+    if (isStaffRoute) {
+      if (staff) {
+        setSession({ type: staff.role, staffId: staff.staffId, name: staff.name, role: staff.role, department: staff.department });
+      } else {
+        setSession(null);
+      }
+    } else {
+      if (guest) {
+        setSession({ type: 'guest', guestId: guest.guestId, name: guest.name, roomNumber: guest.roomNumber });
+      } else {
+        setSession(null);
+      }
     }
-    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    syncSessionFromStorage();
+    setLoading(false);
+
+    const handler = () => syncSessionFromStorage();
+    window.addEventListener('hashchange', handler);
+    window.addEventListener('popstate', handler);
+    return () => {
+      window.removeEventListener('hashchange', handler);
+      window.removeEventListener('popstate', handler);
+    };
+  }, [syncSessionFromStorage]);
 
   const loginGuest = useCallback(async (username: string, roomNumber: string, pin: string) => {
     setLoading(true);
@@ -68,11 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    logoutGuest();
-    logoutStaff();
-    setGuestData(null);
-    setStaffData(null);
-    setSession(null);
+    const loc = (window.location.hash || window.location.pathname).toLowerCase();
+    if (loc.includes('staff')) {
+      logoutStaff();
+      setStaffData(null);
+      setSession(null);
+    } else {
+      logoutGuest();
+      setGuestData(null);
+      setSession(null);
+    }
   }, []);
 
   return (

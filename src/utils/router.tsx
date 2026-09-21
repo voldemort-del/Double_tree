@@ -10,7 +10,13 @@ export interface RouteMatch {
 
 function getPath(): string {
   const hash = window.location.hash.replace(/^#/, '');
-  return hash || '/';
+  if (hash) return hash;
+  const pathname = window.location.pathname;
+  if (pathname && pathname !== '/') {
+    window.location.hash = pathname;
+    return pathname;
+  }
+  return '/';
 }
 
 export function navigate(path: string): void {
@@ -31,7 +37,11 @@ function useTick(): [number, (n: number) => void] {
   useEffect(() => {
     const handler = () => setTick((t) => t + 1);
     window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
+    window.addEventListener('popstate', handler);
+    return () => {
+      window.removeEventListener('hashchange', handler);
+      window.removeEventListener('popstate', handler);
+    };
   }, [setTick]);
   return [tick, setTick];
 }

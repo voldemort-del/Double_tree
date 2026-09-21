@@ -21,6 +21,7 @@ export interface ConciergeContext {
   hotelId: string;
   guestName: string;
   roomNumber: string;
+  conversationId?: string;
 }
 
 export interface ConciergeAnalysis {

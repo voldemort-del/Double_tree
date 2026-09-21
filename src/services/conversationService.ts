@@ -69,6 +69,9 @@ export async function sendMessage(
   roomNumber: string,
   content: string,
 ): Promise<ConversationResult | null> {
+  const conv = await getOrCreateConversation(guestId, stayId);
+  const convId = conv?.id ?? 'conv-1';
+
   const context: ConciergeContext = {
     guestId,
     stayId,
@@ -76,34 +79,63 @@ export async function sendMessage(
     roomId,
     guestName,
     roomNumber,
+    conversationId: convId,
   };
 
-  // 1. Analyze message using the AI Concierge Engine
+  // 1. Analyze message using active AI Concierge Engine (Gemini with fallback)
   const analysis = await conciergeEngine.analyzeAndRespond(content, context);
-
-  const conv = await getOrCreateConversation(guestId, stayId);
-  const convId = conv?.id ?? 'conv-1';
 
   // 2. Persist guest message
   await addMessage(convId, 'guest', content);
 
-  // 3. Create operational request if action is required
+  // 3. Create operational request if action is required AND no critical information is missing
   let request: HotelRequest | undefined;
-  if (analysis.actionRequired) {
+  const hasMissingInfo = Array.isArray(analysis.missingInformation) && analysis.missingInformation.length > 0;
+
+  if (analysis.actionRequired && !hasMissingInfo && !analysis.isExistingRequestAction) {
     const title = analysis.title?.trim() || 'Guest Service Request';
     const description = analysis.description?.trim() || `Guest in ${roomNumber ? `Room ${roomNumber}` : 'room'} requests: "${content}".`;
-    const input: CreateRequestInput = {
-      hotelId,
-      guestId,
-      stayId,
-      roomId,
-      conversationId: convId,
-      title,
-      description,
-      category: analysis.department ?? 'Concierge',
-      priority: analysis.priority ?? 'Normal',
-    };
-    request = (await createRequest(input)) ?? undefined;
+
+    // Duplicate request protection: Check if an identical request was placed within last 90 seconds
+    try {
+      const { getGuestRequests } = await import('./requestService');
+      const recent = await getGuestRequests(guestId);
+      const duplicate = recent.find((r) => {
+        if (r.title.toLowerCase() !== title.toLowerCase()) return false;
+        const elapsed = Date.now() - new Date(r.createdAt).getTime();
+        return elapsed < 90000; // 90 seconds
+      });
+
+      if (duplicate) {
+        request = duplicate;
+      } else {
+        const input: CreateRequestInput = {
+          hotelId,
+          guestId,
+          stayId,
+          roomId,
+          conversationId: convId,
+          title,
+          description,
+          category: analysis.department ?? 'Concierge',
+          priority: analysis.priority ?? 'Normal',
+        };
+        request = (await createRequest(input)) ?? undefined;
+      }
+    } catch {
+      const input: CreateRequestInput = {
+        hotelId,
+        guestId,
+        stayId,
+        roomId,
+        conversationId: convId,
+        title,
+        description,
+        category: analysis.department ?? 'Concierge',
+        priority: analysis.priority ?? 'Normal',
+      };
+      request = (await createRequest(input)) ?? undefined;
+    }
   }
 
   // 4. Persist assistant message linked to the created request
