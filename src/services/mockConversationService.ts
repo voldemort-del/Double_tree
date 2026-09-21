@@ -122,24 +122,47 @@ function parseIntent(message: string, guestName: string, roomNumber: string): Pa
   }
 
   if (/room service|food|order|eat|dinner|lunch|breakfast in room|menu|wine|drink|coffee|tea|sandwich|pasta|pizza|salad|dessert/.test(msg)) {
+    const hasItem = /(carbonara|sea bass|steak|rabbit|penne|tiramisu|cisk|wine)/i.test(msg);
+    if (!hasItem) {
+      return {
+        actionable: false,
+        category: 'Room Service',
+        priority: 'Normal',
+        title: 'Menu inquiry',
+        description: `Guest asked about menu: ${message}`,
+        reply: `Hello! Our dining menu includes Bruschetta al Pomodoro, Spaghetti Carbonara, Grilled Sea Bass, Maltese Rabbit Stew, Beef Tenderloin, Penne Arrabbiata, Tiramisu, fine Maltese wines, and Cisk beers. Please let me know what you would like to order!`,
+      };
+    }
     return {
       actionable: true,
       category: 'Room Service',
       priority: 'Normal',
       title: message.length > 45 ? message.slice(0, 45) + '\u2026' : message,
       description: `Room service order: ${message}`,
-      reply: `Certainly. I\u2019ve placed a room service order for Room ${roomNumber}. Our Food & Beverage team will prepare this for you.`,
+      reply: `Certainly. I\u2019ve placed your dining order for Room ${roomNumber}. Our Food & Beverage team will prepare this for you.`,
     };
   }
 
   if (/spa|massage|treatment|facial|wellness|sauna/.test(msg)) {
+    const hasTime = /\b(\d{1,2}(:\d{2})?\s*(am|pm)?|\d{1,2}\s*(am|pm)|morning|afternoon|evening)\b/i.test(msg);
+    const hasDate = /\b(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(msg);
+    if (!hasTime || !hasDate) {
+      return {
+        actionable: false,
+        category: 'Spa & Wellness',
+        priority: 'Normal',
+        title: 'Spa booking inquiry',
+        description: `Guest asked about spa: ${message}`,
+        reply: `Hello! We would be delighted to arrange a spa treatment at Myoka 5 Senses Spa for you. Could you please specify your preferred treatment along with the date and time?`,
+      };
+    }
     return {
       actionable: true,
       category: 'Spa & Wellness',
       priority: 'Normal',
       title: 'Spa treatment request',
       description: `Guest requested: ${message}`,
-      reply: `Certainly. I can help you request a spa booking through Myoka Spa. I\u2019ve sent your request to our Spa & Wellness team, who will confirm availability with you shortly.`,
+      reply: `Certainly. I’ve submitted your spa booking request for Room ${roomNumber}. Our Spa & Wellness team will confirm your appointment shortly.`,
     };
   }
 

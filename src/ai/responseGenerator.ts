@@ -96,15 +96,26 @@ export async function generateResponse(
 
   // 7. Food & Beverage / Room Service
   if (classified.intent === 'food_beverage_request') {
-    if (/room service/i.test(lower)) {
-      return `I've initiated a room service request for ${room}. Our Food & Beverage team has been notified and can assist with your in-room order.`;
+    if (extracted.missingInformation && extracted.missingInformation.includes('menu_selection')) {
+      return `Hello ${firstName}! Here is what is currently available from our dining and room service menu:
+• Starters: Bruschetta al Pomodoro (€8.50), Seafood Soup (€12.00), Caprese Salad (€11.00)
+• Mains: Spaghetti Carbonara (€18.00), Grilled Sea Bass (€26.00), Maltese Rabbit Stew (€22.00), Beef Tenderloin (€34.00), Penne Arrabbiata (€15.00), Grilled Chicken Fillet (€20.00)
+• Desserts: Tiramisu (€9.00), Maltese Imqaret (€8.00), Panna Cotta (€8.50), Chocolate Fondant (€10.00)
+• Drinks: Marsovin Wines, Cisk Lager, Aperol Spritz, Soft Drinks & Fresh Juices
+
+Please let me know which items and quantities you would like to order!`;
     }
-    return `Certainly! I've sent your dining request to our Food & Beverage team for ${room}.`;
+
+    return `Certainly, ${firstName}! I've placed your order with our Food & Beverage team for ${room}. It will be prepared and delivered shortly.`;
   }
 
   // 8. Spa & Wellness
   if (classified.intent === 'spa_request') {
-    return `I've sent your request to our Myoka Spa team for ${room}. A spa coordinator will check availability and confirm your booking details shortly.`;
+    if (extracted.missingInformation && (extracted.missingInformation.includes('preferred_time') || extracted.missingInformation.includes('preferred_date'))) {
+      return `Hello ${firstName}! We would be delighted to arrange a treatment for you at the Myoka 5 Senses Spa. Could you please let me know your preferred treatment (e.g., Swedish Massage, Hot Stone, Facial) along with your preferred date and time?`;
+    }
+
+    return `Thank you, ${firstName}. I have submitted your booking request for the Myoka Spa for ${room}. Our wellness team will confirm your appointment shortly.`;
   }
 
   // 9. Concierge / Taxi / Transport / Dining Bookings

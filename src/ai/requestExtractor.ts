@@ -100,47 +100,62 @@ export function extractRequestData(
       let title = 'In-room dining inquiry / order';
       const missing: string[] = [];
 
-      if (/room service/i.test(lower)) {
-        title = 'Room service request';
-      } else if (/breakfast/i.test(lower)) {
-        title = 'In-room breakfast request';
-      } else if (/dinner/i.test(lower)) {
-        title = 'In-room dinner request';
-      } else if (/drink|wine|coffee/i.test(lower)) {
-        title = 'Beverage request';
-      }
+      // Detect if user is merely inquiring vs placing an explicit order
+      const isInquiryOnly =
+        /what.*(eat|order|menu|available|have)|can i (see|have|get) (the )?menu|menu|food options|dining options|i('m| am) hungry/i.test(lower) &&
+        !/(order|bring|send|deliver|want|have) (the |a |two |2 )?(spaghetti|carbonara|sea bass|steak|rabbit|penne|arrabbiata|chicken|bruschetta|soup|salad|tiramisu|imqaret|wine|beer|cisk|cappuccino|water|coke)/i.test(lower);
 
-      // Check if details are missing
-      if (!/tapas|burger|salad|wine|pasta|club sandwich|coffee|tea|juice/i.test(lower) && message.length < 35) {
+      const hasSpecificItem =
+        /(spaghetti|carbonara|sea bass|steak|rabbit|penne|arrabbiata|chicken|bruschetta|soup|salad|tiramisu|imqaret|wine|beer|cisk|cappuccino|water|coke|juice|espresso)/i.test(lower);
+
+      if (!hasSpecificItem || isInquiryOnly) {
         missing.push('menu_selection');
       }
 
+      if (/room service/i.test(lower)) {
+        title = 'Room service order';
+      } else if (/drink|wine|cocktail|beer/i.test(lower)) {
+        title = 'Bar / beverage order';
+      } else {
+        title = 'Dining order';
+      }
+
+      const actionRequired = hasSpecificItem && !isInquiryOnly;
+
       return {
-        actionRequired: true,
+        actionRequired,
         department: 'Food & Beverage',
         priority: 'Normal',
         title,
-        description: `Guest in ${room} requests room service: ${message}.`,
+        description: actionRequired
+          ? `Guest in ${room} orders: ${message}.`
+          : `Guest in ${room} inquiring about dining/menu: ${message}.`,
         missingInformation: missing,
       };
     }
 
     case 'spa_request': {
-      let title = 'Spa treatment booking inquiry';
-      if (/massage/i.test(lower)) title = 'Massage appointment request';
-      else if (/facial/i.test(lower)) title = 'Facial treatment booking';
+      let title = 'Spa treatment booking';
+      if (/massage/i.test(lower)) title = 'Massage appointment';
+      else if (/facial/i.test(lower)) title = 'Facial treatment';
 
       const missing: string[] = [];
-      if (!/\b(morning|afternoon|evening|pm|am|\d{1,2}(:\d{2})?|tomorrow|today)\b/i.test(lower)) {
-        missing.push('preferred_time');
-      }
+      const hasTime = /\b(\d{1,2}(:\d{2})?\s*(am|pm)?|\d{1,2}\s*(am|pm)|morning|afternoon|evening)\b/i.test(lower);
+      const hasDate = /\b(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}(st|nd|rd|th)?)\b/i.test(lower);
+
+      if (!hasTime) missing.push('preferred_time');
+      if (!hasDate) missing.push('preferred_date');
+
+      const actionRequired = hasTime && hasDate;
 
       return {
-        actionRequired: true,
+        actionRequired,
         department: 'Spa & Wellness',
         priority: 'Normal',
         title,
-        description: `Guest in ${room} requests spa appointment: ${message}.`,
+        description: actionRequired
+          ? `Guest in ${room} requests booking: ${message}.`
+          : `Guest in ${room} inquiring about spa: ${message}.`,
         missingInformation: missing,
       };
     }
