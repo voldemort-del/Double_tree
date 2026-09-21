@@ -25,20 +25,20 @@ export function GuestRequests() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0 scrollbar-none">
         {FILTERS.map((f) => {
           const count = f === 'All' ? all.length : all.filter((r) => r.status === f).length;
           return (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors flex-shrink-0 ${
                 filter === f
-                  ? 'bg-sea-700 text-white'
-                  : 'bg-white text-slate-500 border border-slate-200 hover:border-sea-300 hover:text-sea-600'
+                  ? 'bg-sea-700 text-white shadow-xs'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:border-sea-300 hover:text-sea-700'
               }`}
             >
-              {f} {count > 0 && <span className="opacity-60">({count})</span>}
+              {f} {count > 0 && <span className="opacity-70 font-normal">({count})</span>}
             </button>
           );
         })}

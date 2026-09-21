@@ -68,22 +68,22 @@ export function GuestConcierge() {
   const isBusy = typing || sending;
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col animate-fade-in">
+    <div className="flex h-[calc(100dvh-12rem)] md:h-[calc(100vh-7rem)] flex-col animate-fade-in">
       {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+      <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5 sm:pb-3">
         <div>
-          <h1 className="font-serif text-xl font-semibold text-slate-900">Your Concierge</h1>
-          <p className="text-xs text-slate-500 font-medium">Ask for anything — we'll route it to the right team.</p>
+          <h1 className="font-serif text-lg sm:text-xl font-semibold text-slate-900">Your Concierge</h1>
+          <p className="text-[11px] sm:text-xs text-slate-500 font-medium">Ask for anything — we'll route it to the right team.</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full bg-sea-50 border border-sea-200/80 px-3 py-1.5">
+        <div className="flex items-center gap-1.5 rounded-full bg-sea-50 border border-sea-200/80 px-2.5 py-1 sm:px-3 sm:py-1.5">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse-soft" />
           <span className="text-xs font-semibold text-sea-700">Online</span>
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin py-4">
-        <div className="space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin py-3 sm:py-4">
+        <div className="space-y-3 sm:space-y-4">
           {conversation.messages.map((msg) => (
             <MessageBubble
               key={msg.id}
@@ -115,18 +115,18 @@ export function GuestConcierge() {
 
       {/* Suggested prompts */}
       {conversation.messages.length <= 1 && !isBusy && (
-        <div className="border-t border-sand-200/60 pt-3">
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-slate-400">
-            <Sparkles className="h-3.5 w-3.5" /> Suggested requests
+        <div className="border-t border-sand-200/60 pt-2.5 pb-1">
+          <p className="mb-1.5 flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-slate-400">
+            <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Suggested requests
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0 scrollbar-none">
             {SUGGESTED_PROMPTS.map((p) => (
               <button
                 key={p.label}
                 type="button"
                 onClick={() => handleSend(p.prompt)}
                 disabled={isBusy}
-                className="rounded-full border border-sand-200 bg-white px-3.5 py-1.5 text-xs text-slate-600 transition-colors hover:border-sea-300 hover:bg-sea-50 hover:text-sea-700 disabled:opacity-50"
+                className="whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-sea-300 hover:bg-sea-50 hover:text-sea-700 disabled:opacity-50 flex-shrink-0"
               >
                 {p.label}
               </button>

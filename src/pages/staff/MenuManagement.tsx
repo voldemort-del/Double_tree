@@ -349,13 +349,13 @@ export default function MenuManagement() {
       </div>
 
       {/* Venue Switcher Tabs */}
-      <div className="flex gap-2 border-b border-ops-200">
+      <div className="flex overflow-x-auto border-b border-ops-200 scrollbar-none gap-2">
         <button
           onClick={() => {
             setActiveVenue('restaurant');
             setActiveCategory('All');
           }}
-          className={`flex items-center gap-2 border-b-2 py-2.5 px-4 text-xs font-semibold transition-colors ${
+          className={`flex items-center gap-2 border-b-2 py-2.5 px-3 sm:px-4 text-xs font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
             activeVenue === 'restaurant'
               ? 'border-ops-900 text-ops-900'
               : 'border-transparent text-ops-500 hover:text-ops-700'
@@ -370,7 +370,7 @@ export default function MenuManagement() {
             setActiveVenue('bar');
             setActiveCategory('All');
           }}
-          className={`flex items-center gap-2 border-b-2 py-2.5 px-4 text-xs font-semibold transition-colors ${
+          className={`flex items-center gap-2 border-b-2 py-2.5 px-3 sm:px-4 text-xs font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
             activeVenue === 'bar'
               ? 'border-ops-900 text-ops-900'
               : 'border-transparent text-ops-500 hover:text-ops-700'
@@ -383,14 +383,14 @@ export default function MenuManagement() {
 
       {/* Search and Filter Row */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-ops-200">
-        <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {['All', ...categories].map((c) => (
             <button
               key={c}
               onClick={() => setActiveCategory(c)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                 activeCategory === c
-                  ? 'bg-ops-900 text-white'
+                  ? 'bg-ops-900 text-white font-semibold'
                   : 'bg-ops-100 text-ops-600 hover:bg-ops-200'
               }`}
             >
@@ -399,7 +399,7 @@ export default function MenuManagement() {
           ))}
         </div>
 
-        <div className="relative min-w-[220px]">
+        <div className="relative min-w-[200px] sm:min-w-[220px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ops-400" />
           <input
             type="text"
@@ -422,7 +422,7 @@ export default function MenuManagement() {
           <p className="text-xs">No products match your filter.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-ops-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-ops-200 bg-white shadow-sm">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-ops-100 bg-ops-50/80 text-ops-600">
               <tr>

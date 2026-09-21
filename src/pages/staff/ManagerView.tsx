@@ -122,7 +122,7 @@ export function ManagerView() {
         </div>
 
         {/* Time range + menu + refresh */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <RouterLink
             to="/staff/menu"
             className="inline-flex items-center gap-1.5 rounded-lg border border-ops-200 bg-white px-3 py-1.5 text-xs font-semibold text-ops-700 shadow-sm hover:bg-ops-50 transition-colors"
@@ -146,7 +146,7 @@ export function ManagerView() {
           </div>
           <button
             onClick={refresh}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-ops-200 bg-white text-ops-400 transition-colors hover:bg-ops-50 hover:text-ops-700"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-ops-200 bg-white text-ops-400 transition-colors hover:bg-ops-50 hover:text-ops-700 flex-shrink-0"
             title="Refresh"
           >
             <RefreshCw className="h-4 w-4" />
@@ -565,7 +565,7 @@ function RequestsTab({
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-48">
+        <div className="relative w-full sm:flex-1 sm:min-w-48">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ops-400" />
           <input
             type="text"
@@ -744,7 +744,7 @@ function RequestsTab({
                         </div>
 
                         {/* Dropdown + confirm */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                           <div className="relative flex-1">
                             <UtensilsCrossed className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-500 pointer-events-none" />
                             <select
@@ -791,7 +791,7 @@ function RequestsTab({
                               const found = staffOnly.find((s) => s.id === staffId);
                               if (found) handleAssign(r.id, found.id, `${found.first_name} ${found.last_name}`);
                             }}
-                            className="flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+                            className="flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors flex-shrink-0"
                           >
                             <UserPlus className="h-3.5 w-3.5" /> Assign
                           </button>

@@ -72,9 +72,9 @@ export function GuestDining() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-5 sm:space-y-6 pb-8">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 p-5 sm:p-8 text-white shadow-xl">
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-300 backdrop-blur-sm border border-amber-500/30">
             <Sparkles className="h-3.5 w-3.5" />
@@ -83,7 +83,7 @@ export function GuestDining() {
           <h1 className="mt-3 font-serif text-2xl sm:text-3xl font-bold tracking-tight">
             Restaurant & Bar Menus
           </h1>
-          <p className="mt-2 text-sm text-slate-300 leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
             Explore authentic Mediterranean gastronomy at Azure Restaurant & Terrace or handcrafted
             cocktails and Maltese vintages at The Moorings & Limonata Pool Bar. Order directly through your AI Concierge for seamless room service.
           </p>
@@ -92,19 +92,19 @@ export function GuestDining() {
       </div>
 
       {/* Venue Switcher Tabs */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
         <button
           onClick={() => {
             setActiveVenue('restaurant');
             setActiveCategory('All');
           }}
-          className={`flex flex-1 items-center justify-center gap-2.5 rounded-xl py-3.5 px-4 text-sm font-semibold transition-all shadow-sm ${
+          className={`flex flex-1 items-center justify-center gap-2.5 rounded-xl py-3 px-3 sm:py-3.5 sm:px-4 text-xs sm:text-sm font-semibold transition-all shadow-sm ${
             activeVenue === 'restaurant'
               ? 'bg-slate-900 text-white ring-2 ring-amber-500/50'
               : 'bg-white text-slate-600 hover:bg-sand-100 border border-sand-200'
           }`}
         >
-          <UtensilsCrossed className="h-4 w-4 text-amber-400" />
+          <UtensilsCrossed className="h-4 w-4 text-amber-400 flex-shrink-0" />
           <span>Azure Restaurant & In-Room Dining</span>
         </button>
 
@@ -113,13 +113,13 @@ export function GuestDining() {
             setActiveVenue('bar');
             setActiveCategory('All');
           }}
-          className={`flex flex-1 items-center justify-center gap-2.5 rounded-xl py-3.5 px-4 text-sm font-semibold transition-all shadow-sm ${
+          className={`flex flex-1 items-center justify-center gap-2.5 rounded-xl py-3 px-3 sm:py-3.5 sm:px-4 text-xs sm:text-sm font-semibold transition-all shadow-sm ${
             activeVenue === 'bar'
               ? 'bg-slate-900 text-white ring-2 ring-amber-500/50'
               : 'bg-white text-slate-600 hover:bg-sand-100 border border-sand-200'
           }`}
         >
-          <Wine className="h-4 w-4 text-amber-400" />
+          <Wine className="h-4 w-4 text-amber-400 flex-shrink-0" />
           <span>The Moorings & Pool Bar</span>
         </button>
       </div>
