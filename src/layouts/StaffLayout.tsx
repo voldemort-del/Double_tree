@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { RouterLink, navigate } from '@/utils/router';
 import { LogOut, LayoutDashboard, ClipboardList, BarChart3, Waves } from 'lucide-react';
+import { ConnectionIndicator } from '@/components/ConnectionIndicator';
+import { ToastContainer } from '@/components/ToastContainer';
 
 export function StaffLayout({ children }: { children: ReactNode }) {
   const { session, logout } = useAuth();
@@ -12,6 +14,7 @@ export function StaffLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-ops-50">
+      <ToastContainer />
       <header className="sticky top-0 z-40 border-b border-ops-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6">
           <div className="flex items-center gap-6">
@@ -20,7 +23,10 @@ export function StaffLayout({ children }: { children: ReactNode }) {
                 <Waves className="h-4 w-4" />
               </div>
               <div className="leading-tight">
-                <p className="text-sm font-semibold text-ops-900">Operations Center</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-ops-900">Operations Center</p>
+                  <ConnectionIndicator />
+                </div>
                 <p className="text-[10px] text-ops-400">DoubleTree Malta</p>
               </div>
             </RouterLink>

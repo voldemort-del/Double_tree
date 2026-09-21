@@ -19,7 +19,7 @@ import {
 
 export function StaffRequestDetail({ requestId }: { requestId: string }) {
   const { staffData } = useAuth();
-  const { request, events, loading, refresh } = useRequestDetail(requestId);
+  const { request, events, loading, refresh, setRequest } = useRequestDetail(requestId);
   const { updateStatus, assignRequest, escalateRequest } = useStaffActions();
   const staffList = useStaffList(staffData?.hotelId ?? '');
   const [showAssign, setShowAssign] = useState(false);
@@ -52,11 +52,25 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
   const canCancel = request.status !== 'Completed' && request.status !== 'Cancelled';
   const canEscalate = request.status !== 'Completed' && request.status !== 'Cancelled';
 
-  async function handleAction(fn: () => Promise<void>) {
+  async function handleAction(fn: () => Promise<boolean>, optimisticPatch?: Partial<HotelRequest>) {
+    const prevRequest = request;
+    if (optimisticPatch && request) {
+      setRequest({ ...request, ...optimisticPatch });
+    }
     setActing(true);
-    await fn();
-    setActing(false);
-    refresh();
+    try {
+      const ok = await fn();
+      if (!ok && prevRequest) {
+        setRequest(prevRequest);
+      }
+    } catch {
+      if (prevRequest) {
+        setRequest(prevRequest);
+      }
+    } finally {
+      setActing(false);
+      refresh();
+    }
   }
 
   return (
@@ -72,22 +86,62 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
             <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
               {acting && <Loader2 className="h-4 w-4 animate-spin text-ops-400" />}
               {canAccept && !acting && (
-                <ActionButton onClick={() => handleAction(() => assignRequest(request.id, staffData.staffId, staffName))} icon={<UserPlus className="h-4 w-4" />} label="Accept & Assign" variant="primary" />
+                <ActionButton
+                  onClick={() => handleAction(
+                    () => assignRequest(request.id, staffData.staffId, staffName),
+                    { status: 'Assigned', assignedStaffId: staffData.staffId, assignedStaffName: staffName }
+                  )}
+                  icon={<UserPlus className="h-4 w-4" />}
+                  label="Accept & Assign"
+                  variant="primary"
+                />
               )}
               {!canAccept && !request.assignedStaffName && !acting && (
                 <ActionButton onClick={() => setShowAssign(!showAssign)} icon={<UserPlus className="h-4 w-4" />} label="Assign" />
               )}
               {canStart && !acting && (
-                <ActionButton onClick={() => handleAction(() => updateStatus(request.id, 'In Progress'))} icon={<Play className="h-4 w-4" />} label="Start" variant="primary" />
+                <ActionButton
+                  onClick={() => handleAction(
+                    () => updateStatus(request.id, 'In Progress'),
+                    { status: 'In Progress' }
+                  )}
+                  icon={<Play className="h-4 w-4" />}
+                  label="Start"
+                  variant="primary"
+                />
               )}
               {canComplete && !acting && (
-                <ActionButton onClick={() => handleAction(() => updateStatus(request.id, 'Completed'))} icon={<CheckCircle2 className="h-4 w-4" />} label="Complete" variant="success" />
+                <ActionButton
+                  onClick={() => handleAction(
+                    () => updateStatus(request.id, 'Completed'),
+                    { status: 'Completed' }
+                  )}
+                  icon={<CheckCircle2 className="h-4 w-4" />}
+                  label="Complete"
+                  variant="success"
+                />
               )}
               {canEscalate && !acting && (
-                <ActionButton onClick={() => handleAction(() => escalateRequest(request.id))} icon={<AlertTriangle className="h-4 w-4" />} label="Escalate" variant="warn" />
+                <ActionButton
+                  onClick={() => handleAction(
+                    () => escalateRequest(request.id),
+                    { status: 'Escalated' }
+                  )}
+                  icon={<AlertTriangle className="h-4 w-4" />}
+                  label="Escalate"
+                  variant="warn"
+                />
               )}
               {canCancel && !acting && (
-                <ActionButton onClick={() => handleAction(() => updateStatus(request.id, 'Cancelled'))} icon={<XCircle className="h-4 w-4" />} label="Cancel" variant="danger" />
+                <ActionButton
+                  onClick={() => handleAction(
+                    () => updateStatus(request.id, 'Cancelled'),
+                    { status: 'Cancelled' }
+                  )}
+                  icon={<XCircle className="h-4 w-4" />}
+                  label="Cancel"
+                  variant="danger"
+                />
               )}
             </div>
 
@@ -96,16 +150,25 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
               <div className="mt-3 rounded-lg border border-ops-200 bg-ops-50 p-3 animate-slide-up">
                 <p className="mb-2 text-xs font-medium text-ops-500">Assign to staff member:</p>
                 <div className="flex flex-wrap gap-2">
-                  {staffList.filter((s) => s.role === 'staff').map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => { handleAction(() => assignRequest(request.id, s.id, `${s.first_name} ${s.last_name}`)); setShowAssign(false); }}
-                      className="flex items-center gap-1.5 rounded-lg border border-ops-200 bg-white px-3 py-1.5 text-xs font-medium text-ops-700 transition-colors hover:border-ops-400 hover:bg-ops-100"
-                    >
-                      <User className="h-3 w-3" />
-                      {s.first_name} {s.last_name}
-                    </button>
-                  ))}
+                  {staffList.filter((s) => s.role === 'staff').map((s) => {
+                    const fullName = `${s.first_name} ${s.last_name}`;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => {
+                          handleAction(
+                            () => assignRequest(request.id, s.id, fullName),
+                            { status: 'Assigned', assignedStaffId: s.id, assignedStaffName: fullName }
+                          );
+                          setShowAssign(false);
+                        }}
+                        className="flex items-center gap-1.5 rounded-lg border border-ops-200 bg-white px-3 py-1.5 text-xs font-medium text-ops-700 transition-colors hover:border-ops-400 hover:bg-ops-100"
+                      >
+                        <User className="h-3 w-3" />
+                        {fullName}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

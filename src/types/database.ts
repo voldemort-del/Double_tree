@@ -137,3 +137,16 @@ export interface RequestEventRow {
   metadata: Record<string, string | number | boolean> | null;
   created_at: string;
 }
+
+export interface HotelKnowledgeRow {
+  id: string;
+  hotel_id: string;
+  category: string;
+  title: string;
+  content: string;
+  keywords: string[];
+  source: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

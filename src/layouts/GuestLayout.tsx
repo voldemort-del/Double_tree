@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { RouterLink, navigate } from '@/utils/router';
 import { hotelInfo } from '@/data/mockData';
 import { LogOut, Home, MessageCircle, ClipboardList, Waves } from 'lucide-react';
+import { ConnectionIndicator } from '@/components/ConnectionIndicator';
+import { ToastContainer } from '@/components/ToastContainer';
 
 export function GuestLayout({ children }: { children: ReactNode }) {
   const { session, logout } = useAuth();
@@ -14,6 +16,7 @@ export function GuestLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-sand-50">
+      <ToastContainer />
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-sand-200/60 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
@@ -22,7 +25,10 @@ export function GuestLayout({ children }: { children: ReactNode }) {
               <Waves className="h-5 w-5" />
             </div>
             <div className="leading-tight">
-              <p className="font-serif text-base font-semibold text-slate-800">{hotelInfo.name}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-serif text-base font-semibold text-slate-800">{hotelInfo.name}</p>
+                <ConnectionIndicator />
+              </div>
               <p className="text-[11px] text-slate-400">Digital Concierge</p>
             </div>
           </RouterLink>

@@ -9,12 +9,12 @@ import { Send, Sparkles, MessageCircle, Loader2 } from 'lucide-react';
 import type { HotelRequest } from '@/types';
 
 const SUGGESTED_PROMPTS = [
-  'Can I get two extra towels?',
-  "The air conditioning isn't working.",
-  'Can you arrange a taxi for 7 PM?',
-  "I'd like to book a spa treatment.",
-  'What time does breakfast start?',
-  "I'd like to order room service.",
+  { label: 'Request extra towels', prompt: 'Can I get two extra towels?' },
+  { label: 'Report a problem', prompt: "The air conditioning isn't working." },
+  { label: 'Ask about dining', prompt: 'What dining options does the hotel have?' },
+  { label: 'Ask about the spa', prompt: "I'd like to book a spa treatment." },
+  { label: 'Ask about hotel facilities', prompt: 'What facilities does the hotel have?' },
+  { label: 'Request assistance', prompt: 'Can you arrange a taxi for 7 PM?' },
 ];
 
 export function GuestConcierge() {
@@ -22,6 +22,7 @@ export function GuestConcierge() {
   const { conversation, loading, sending, send } = useConversation();
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,11 +32,19 @@ export function GuestConcierge() {
   }, [conversation?.messages.length, typing]);
 
   async function handleSend(text: string) {
-    if (!text.trim() || !session || session.type !== 'guest' || sending) return;
+    const trimmed = text.trim();
+    if (!trimmed || !session || session.type !== 'guest' || sending || typing) return;
+    setError(null);
     setInput('');
     setTyping(true);
-    await send(text);
-    setTyping(false);
+    try {
+      await send(trimmed);
+    } catch (err) {
+      console.error('Failed to send concierge message:', err);
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setTyping(false);
+    }
   }
 
   if (session?.type !== 'guest') return null;
@@ -47,6 +56,8 @@ export function GuestConcierge() {
       </div>
     );
   }
+
+  const isBusy = typing || sending;
 
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col animate-fade-in">
@@ -76,14 +87,17 @@ export function GuestConcierge() {
             />
           ))}
 
-          {typing && (
-            <div className="flex items-center gap-2.5">
+          {isBusy && (
+            <div className="flex items-center gap-2.5 animate-fade-in">
               <Avatar role="assistant" guestName={session.name} />
-              <div className="rounded-2xl rounded-tl-sm bg-white border border-sand-200 px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="h-2 w-2 rounded-full bg-sea-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="h-2 w-2 rounded-full bg-sea-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="h-2 w-2 rounded-full bg-sea-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="rounded-2xl rounded-tl-sm bg-white border border-sand-200 px-4 py-3 shadow-xs">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <span className="h-2 w-2 rounded-full bg-sea-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="h-2 w-2 rounded-full bg-sea-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="h-2 w-2 rounded-full bg-sea-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span className="text-xs text-slate-400">Concierge is responding…</span>
                 </div>
               </div>
             </div>
@@ -92,7 +106,7 @@ export function GuestConcierge() {
       </div>
 
       {/* Suggested prompts */}
-      {conversation.messages.length <= 1 && !typing && (
+      {conversation.messages.length <= 1 && !isBusy && (
         <div className="border-t border-sand-200/60 pt-3">
           <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-slate-400">
             <Sparkles className="h-3.5 w-3.5" /> Suggested requests
@@ -100,18 +114,27 @@ export function GuestConcierge() {
           <div className="flex flex-wrap gap-2">
             {SUGGESTED_PROMPTS.map((p) => (
               <button
-                key={p}
-                onClick={() => handleSend(p)}
-                className="rounded-full border border-sand-200 bg-white px-3.5 py-1.5 text-xs text-slate-600 transition-colors hover:border-sea-300 hover:bg-sea-50 hover:text-sea-700"
+                key={p.label}
+                type="button"
+                onClick={() => handleSend(p.prompt)}
+                disabled={isBusy}
+                className="rounded-full border border-sand-200 bg-white px-3.5 py-1.5 text-xs text-slate-600 transition-colors hover:border-sea-300 hover:bg-sea-50 hover:text-sea-700 disabled:opacity-50"
               >
-                {p}
+                {p.label}
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Input */}
+      {/* Error notification if any */}
+      {error && (
+        <div className="mb-2 rounded-lg bg-red-50 p-2.5 text-xs text-red-600 border border-red-200">
+          {error}
+        </div>
+      )}
+
+      {/* Input form */}
       <div className="border-t border-sand-200/60 pt-3">
         <form
           onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
@@ -121,6 +144,7 @@ export function GuestConcierge() {
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              disabled={isBusy}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -128,17 +152,21 @@ export function GuestConcierge() {
                 }
               }}
               rows={1}
-              placeholder="Type your request…"
-              className="w-full resize-none rounded-xl border border-sand-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-sea-400 focus:ring-2 focus:ring-sea-100"
+              placeholder={isBusy ? "Processing your request…" : "Type your request…"}
+              className="w-full resize-none rounded-xl border border-sand-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-sea-400 focus:ring-2 focus:ring-sea-100 disabled:bg-slate-50"
               style={{ minHeight: '46px', maxHeight: '120px' }}
             />
           </div>
           <button
             type="submit"
-            disabled={!input.trim() || typing || sending}
+            disabled={!input.trim() || isBusy}
             className="flex h-[46px] w-[46px] flex-shrink-0 items-center justify-center rounded-xl bg-sea-700 text-white transition-all hover:bg-sea-800 disabled:opacity-40"
           >
-            <Send className="h-4 w-4" />
+            {isBusy ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </button>
         </form>
       </div>

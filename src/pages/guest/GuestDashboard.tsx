@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useGuestRequests } from '@/hooks/useStore';
+import { useGuestRequests, useGuestStay } from '@/hooks/useStore';
 import { RouterLink } from '@/utils/router';
 import { hotelInfo } from '@/data/mockData';
 import { RequestCard } from '@/components/RequestCard';
@@ -19,9 +19,16 @@ import {
   Loader2,
 } from 'lucide-react';
 
+function daysUntil(isoDate: string | undefined): number {
+  if (!isoDate) return 0;
+  const diff = new Date(isoDate).getTime() - Date.now();
+  return Math.max(0, Math.ceil(diff / 86400000));
+}
+
 export function GuestDashboard() {
   const { session, guestData } = useAuth();
   const { requests, loading } = useGuestRequests(guestData?.guestId ?? '');
+  const { stay } = useGuestStay(guestData?.guestId ?? '');
 
   if (session?.type !== 'guest' || !guestData) return null;
 
@@ -31,6 +38,9 @@ export function GuestDashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const firstName = session.name.split(' ')[0];
+
+  const checkoutDays = daysUntil(stay?.checkOut);
+  const adultsLabel = stay ? `${stay.adults} adult${stay.adults !== 1 ? 's' : ''}${stay.children > 0 ? `, ${stay.children} child${stay.children !== 1 ? 'ren' : ''}` : ''}` : '2 adults';
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -59,8 +69,17 @@ export function GuestDashboard() {
 
           <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-sea-100">
             <span className="flex items-center gap-1.5"><BedDouble className="h-4 w-4" /> Room {guestData.roomNumber}</span>
-            <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> Check-out in 4 days</span>
-            <span className="flex items-center gap-1.5"><Sun className="h-4 w-4" /> 2 adults</span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              {stay
+                ? checkoutDays === 0
+                  ? 'Checking out today'
+                  : checkoutDays === 1
+                  ? 'Check-out tomorrow'
+                  : `Check-out in ${checkoutDays} days`
+                : 'Check-out in 4 days'}
+            </span>
+            <span className="flex items-center gap-1.5"><Sun className="h-4 w-4" /> {adultsLabel}</span>
           </div>
         </div>
       </section>
@@ -128,11 +147,11 @@ export function GuestDashboard() {
                 <span className="text-sm font-medium">Breakfast</span>
               </div>
               <p className="mt-1.5 text-sm text-slate-500">{hotelInfo.breakfastHours}</p>
-              <p className="text-xs text-slate-400">Azure Restaurant & Terrace</p>
+              <p className="text-xs text-slate-400">Azure Restaurant &amp; Terrace</p>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <p className="text-sm font-medium text-slate-700">Dining & Bars</p>
+              <p className="text-sm font-medium text-slate-700">Dining &amp; Bars</p>
               <ul className="mt-2 space-y-1.5">
                 {hotelInfo.venues.slice(0, 5).map((v) => (
                   <li key={v} className="text-xs text-slate-500">{v}</li>

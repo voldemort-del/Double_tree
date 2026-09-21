@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { navigate } from '@/utils/router';
 import { hotelInfo } from '@/data/mockData';
-import { Waves, User, KeyRound, DoorOpen, ArrowRight, Loader2 } from 'lucide-react';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { Waves, User, KeyRound, DoorOpen, ArrowRight, Loader2, Database, Sparkles } from 'lucide-react';
 
 export function GuestLogin() {
   const { loginGuest } = useAuth();
@@ -21,7 +22,11 @@ export function GuestLogin() {
     if (ok) {
       navigate('/guest/dashboard');
     } else {
-      setError('Could not sign in. Please check your details and try again.');
+      setError(
+        isSupabaseConfigured
+          ? 'Could not sign in. Please verify your username, room number, and PIN.'
+          : 'Could not sign in. Try clicking "Use demo guest" below.'
+      );
     }
   }
 
@@ -29,6 +34,7 @@ export function GuestLogin() {
     setUsername('guest');
     setRoom('408');
     setPin('1234');
+    setError('');
   }
 
   return (
@@ -52,7 +58,20 @@ export function GuestLogin() {
 
         {/* Card */}
         <div className="rounded-2xl bg-white/95 p-7 shadow-2xl backdrop-blur-xl animate-slide-up">
-          <h2 className="font-serif text-xl font-semibold text-slate-800">Welcome Back</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif text-xl font-semibold text-slate-800">Welcome Back</h2>
+            {isSupabaseConfigured ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live DB
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Demo Mode
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-slate-500">Sign in to access your private concierge for this stay.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">

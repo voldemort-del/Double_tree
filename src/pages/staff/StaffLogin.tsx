@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { navigate } from '@/utils/router';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { Waves, User, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 export function StaffLogin() {
@@ -17,11 +18,15 @@ export function StaffLogin() {
     const ok = await loginStaff(username, password);
     setLoading(false);
     if (!ok) {
-      setError('Invalid credentials. Please try again.');
+      setError(
+        isSupabaseConfigured
+          ? 'Invalid credentials. Please verify your username and password.'
+          : 'Invalid credentials. Try using the quick demo buttons below.'
+      );
       return;
     }
     // Navigate based on role
-    if (username === 'manager') {
+    if (username.trim().toLowerCase() === 'manager') {
       navigate('/staff/manager');
     } else {
       navigate('/staff/dashboard');
@@ -40,7 +45,20 @@ export function StaffLogin() {
         </div>
 
         <div className="rounded-xl border border-ops-200 bg-white p-6 shadow-xl animate-slide-up">
-          <h2 className="text-base font-semibold text-ops-900">Staff Sign In</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-ops-900">Staff Sign In</h2>
+            {isSupabaseConfigured ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live DB
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Demo Mode
+              </span>
+            )}
+          </div>
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <label className="block">
