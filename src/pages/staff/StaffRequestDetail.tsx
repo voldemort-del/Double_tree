@@ -5,6 +5,7 @@ import { RequestDetailCard } from '@/components/RequestDetailCard';
 import { RequestTimeline } from '@/components/RequestTimeline';
 import { RouterLink } from '@/utils/router';
 import type { RequestStatus } from '@/types';
+import { initials } from '@/utils/format';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -12,7 +13,7 @@ import {
   UserPlus,
   AlertTriangle,
   XCircle,
-  User,
+  X,
   MessageCircle,
   Loader2,
 } from 'lucide-react';
@@ -145,64 +146,94 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
               )}
             </div>
 
-            {/* Assign picker */}
-            {showAssign && (
-              <div className="mt-3 rounded-lg border border-ops-200 bg-ops-50 p-3.5 animate-slide-up">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="text-xs font-semibold text-ops-800">Assign to Staff Member</p>
-                    <p className="text-[11px] text-ops-500">Choose from the 5 department staff members below:</p>
-                  </div>
-                  <button
-                    onClick={() => setShowAssign(false)}
-                    className="text-xs text-ops-400 hover:text-ops-600 px-2 py-0.5 rounded hover:bg-ops-100"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {staffList.filter((s) => s.role === 'staff').map((s) => {
-                    const fullName = `${s.first_name} ${s.last_name}`;
-                    const dept = s.departmentName || 'General';
-                    const isMatch =
-                      (request.category && dept.toLowerCase().includes(request.category.toLowerCase())) ||
-                      (request.category && request.category.toLowerCase().includes(dept.toLowerCase())) ||
-                      (request.category?.toLowerCase() === 'room service' && dept === 'Food & Beverage');
+            {/* Assign picker — department-first */}
+            {showAssign && (() => {
+              const staffOnly = staffList.filter((s) => s.role === 'staff');
+              const requestDept = request.department;
+              const matchedStaff = staffOnly.filter((s) => s.departmentName === requestDept);
+              const otherStaff = staffOnly.filter((s) => s.departmentName !== requestDept);
 
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={() => {
-                          handleAction(
-                            () => assignRequest(request.id, s.id, fullName),
-                            { status: 'Assigned', assignedStaffId: s.id, assignedStaffName: fullName }
-                          );
-                          setShowAssign(false);
-                        }}
-                        className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all ${
-                          isMatch
-                            ? 'border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-400'
-                            : 'border-ops-200 bg-white hover:bg-ops-100'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-semibold text-xs text-ops-900 flex items-center gap-1.5">
-                            <User className="h-3.5 w-3.5 text-ops-500" />
-                            {fullName}
-                          </span>
-                          {isMatch && (
-                            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
-                              Match
-                            </span>
-                          )}
+              const StaffCard = ({ s }: { s: typeof staffOnly[0] }) => {
+                const fullName = `${s.first_name} ${s.last_name}`;
+                const dept = s.departmentName || 'General';
+                const isCurrent = request.assignedTo === s.id || request.assignedStaffName?.toLowerCase() === fullName.toLowerCase();
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      handleAction(
+                        () => assignRequest(request.id, s.id, fullName),
+                        { status: 'Assigned', assignedStaffId: s.id, assignedStaffName: fullName }
+                      );
+                      setShowAssign(false);
+                    }}
+                    className={`flex items-center gap-3 w-full text-left p-3 rounded-xl border transition-all ${
+                      isCurrent
+                        ? 'border-indigo-400 bg-indigo-50 ring-1 ring-indigo-300'
+                        : 'border-ops-200 bg-white hover:border-ops-400 hover:bg-ops-50'
+                    }`}
+                  >
+                    <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+                      dept === 'Housekeeping' ? 'bg-sky-500' :
+                      dept === 'Maintenance' ? 'bg-orange-500' :
+                      dept === 'Concierge' ? 'bg-purple-500' :
+                      dept === 'Food & Beverage' ? 'bg-amber-500' :
+                      dept === 'Spa & Wellness' ? 'bg-emerald-500' :
+                      'bg-ops-500'
+                    }`}>
+                      {initials(fullName)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-ops-900 truncate">{fullName}</p>
+                      <p className="text-[11px] text-ops-500">{dept}</p>
+                    </div>
+                    {isCurrent && (
+                      <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full flex-shrink-0">Current</span>
+                    )}
+                  </button>
+                );
+              };
+
+              return (
+                <div className="mt-3 rounded-xl border border-ops-200 bg-white shadow-sm overflow-hidden animate-slide-up">
+                  <div className="flex items-center justify-between px-4 py-3 bg-ops-50 border-b border-ops-100">
+                    <div>
+                      <p className="text-xs font-bold text-ops-900">Assign to Staff</p>
+                      <p className="text-[11px] text-ops-500 mt-0.5">
+                        <span className="font-semibold text-ops-700">{requestDept}</span> request — suggested staff shown first
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowAssign(false)}
+                      className="flex items-center gap-1 text-xs text-ops-400 hover:text-ops-700 px-2 py-1 rounded-lg hover:bg-ops-100"
+                    >
+                      <X className="h-3 w-3" /> Close
+                    </button>
+                  </div>
+                  <div className="p-3 space-y-3">
+                    {matchedStaff.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Suggested — {requestDept} Department
+                        </p>
+                        <div className="space-y-1.5">
+                          {matchedStaff.map((s) => <StaffCard key={s.id} s={s} />)}
                         </div>
-                        <span className="text-[11px] text-ops-500 mt-1">{dept}</span>
-                      </button>
-                    );
-                  })}
+                      </div>
+                    )}
+                    {otherStaff.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold text-ops-400 uppercase tracking-wide mb-1.5">Other Staff</p>
+                        <div className="space-y-1.5">
+                          {otherStaff.map((s) => <StaffCard key={s.id} s={s} />)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </RequestDetailCard>
 
           {/* Guest context */}
