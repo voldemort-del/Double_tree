@@ -47,14 +47,14 @@ export function StaffLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-white">{session.name}</p>
-              <p className="text-[10px] text-ops-400">{session.role === 'manager' ? 'Manager' : session.department}</p>
+              <p className="text-[10px] font-medium text-slate-300">{session.role === 'manager' ? 'Manager' : session.department}</p>
             </div>
-            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-ops-900 ${isManager ? 'bg-gradient-to-br from-sea-300 to-sea-500' : 'bg-gradient-to-br from-sea-400 to-sea-600'}`}>
+            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-ops-900 ${isManager ? 'bg-gradient-to-br from-amber-300 to-amber-500' : 'bg-gradient-to-br from-sea-300 to-sea-500'}`}>
               {session.name.split(' ').map((p) => p[0]).join('')}
             </div>
             <button
               onClick={() => { logout(); navigate('/staff/login'); }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-ops-400 transition-colors hover:bg-ops-800 hover:text-white"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-ops-800 hover:text-white"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -85,8 +85,8 @@ function StaffNavLink({ to, active, icon, label }: { to: string; active: boolean
       to={to}
       className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
         active
-          ? 'bg-sea-600/30 text-sea-300 border border-sea-600/40'
-          : 'text-ops-300 hover:bg-ops-800 hover:text-white'
+          ? 'bg-sea-600/30 text-sea-200 border border-sea-400/40 font-semibold'
+          : 'text-slate-300 hover:bg-ops-800 hover:text-white font-medium'
       }`}
     >
       {icon}

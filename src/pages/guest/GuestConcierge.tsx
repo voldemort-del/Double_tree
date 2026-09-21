@@ -70,14 +70,14 @@ export function GuestConcierge() {
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col animate-fade-in">
       {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-sand-200/60 pb-3">
+      <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
         <div>
-          <h1 className="font-serif text-xl font-semibold text-slate-800">Your Concierge</h1>
-          <p className="text-xs text-slate-400">Ask for anything — we'll route it to the right team.</p>
+          <h1 className="font-serif text-xl font-semibold text-slate-900">Your Concierge</h1>
+          <p className="text-xs text-slate-500 font-medium">Ask for anything — we'll route it to the right team.</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full bg-sea-50 px-3 py-1.5">
+        <div className="flex items-center gap-1.5 rounded-full bg-sea-50 border border-sea-200/80 px-3 py-1.5">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse-soft" />
-          <span className="text-xs font-medium text-sea-700">Online</span>
+          <span className="text-xs font-semibold text-sea-700">Online</span>
         </div>
       </div>
 
@@ -215,13 +215,13 @@ function MessageBubble({
         <div
           className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
             isGuest
-              ? 'rounded-tr-sm bg-sea-700 text-white'
-              : 'rounded-tl-sm border border-sand-200 bg-white text-slate-700'
+              ? 'rounded-tr-sm bg-sea-700 text-white font-normal'
+              : 'rounded-tl-sm border border-slate-200 bg-white text-slate-800 shadow-sm'
           }`}
         >
           {content}
         </div>
-        <p className={`mt-1 text-[11px] text-slate-300 ${isGuest ? 'text-right' : 'text-slate-400'}`}>
+        <p className={`mt-1 text-[11px] font-medium ${isGuest ? 'text-right text-slate-400' : 'text-slate-500'}`}>
           {formatTime(timestamp)}
         </p>
         {request && (
@@ -237,14 +237,14 @@ function MessageBubble({
 function Avatar({ role, guestName }: { role: 'guest' | 'assistant'; guestName: string }) {
   if (role === 'assistant') {
     return (
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-sea-100 text-sea-600">
+      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-sea-100 text-sea-700 shadow-sm">
         <MessageCircle className="h-4 w-4" />
       </div>
     );
   }
   const initials = guestName.split(' ').map((p) => p[0]).join('');
   return (
-    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-sand-200 text-xs font-semibold text-sand-700">
+    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700">
       {initials}
     </div>
   );

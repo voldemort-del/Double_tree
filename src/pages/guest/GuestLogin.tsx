@@ -57,14 +57,14 @@ export function GuestLogin() {
             <Waves className="h-8 w-8 text-white" />
           </div>
           <h1 className="font-serif text-3xl font-medium tracking-wide text-white">{hotelInfo.name}</h1>
-          <p className="mt-1.5 text-sm text-sea-300">{hotelInfo.location}</p>
+          <p className="mt-1.5 text-sm text-sea-200 font-medium">{hotelInfo.location}</p>
           <div className="mt-4 inline-block border-t border-sea-700/50 pt-3">
-            <p className="text-xs uppercase tracking-[0.25em] text-sea-400 font-medium">Private Guest Concierge</p>
+            <p className="text-xs uppercase tracking-[0.25em] text-amber-300 font-semibold">Private Guest Concierge</p>
           </div>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-ops-700/40 bg-white/97 p-7 shadow-navy-md backdrop-blur-xl animate-slide-up">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-7 shadow-navy-md backdrop-blur-xl animate-slide-up">
           <div className="flex items-center justify-between mb-1">
             <h2 className="font-serif text-xl font-semibold text-ops-900">Welcome Back</h2>
             {isSupabaseConfigured ? (
@@ -79,7 +79,7 @@ export function GuestLogin() {
               </span>
             )}
           </div>
-          <p className="text-sm text-sand-600">Sign in to access your private concierge for this stay.</p>
+          <p className="text-sm text-ops-600 font-normal">Sign in to access your private concierge for this stay.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <Field
@@ -132,14 +132,14 @@ export function GuestLogin() {
             <div className="divider-gold" />
             <button
               onClick={fillDemo}
-              className="mt-4 w-full rounded-xl border border-sand-200 bg-sand-50 py-2.5 text-xs font-medium text-sand-700 transition-all hover:bg-sand-100 hover:border-sand-300"
+              className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-ops-800 transition-all hover:bg-slate-100 hover:border-slate-300"
             >
               Use demo guest — Alex Morgan, Room 408
             </button>
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-ops-500">
+        <p className="mt-6 text-center text-xs text-slate-300 font-medium">
           This is a private digital concierge for registered hotel guests.
         </p>
       </div>
@@ -160,16 +160,16 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-ops-700">{label}</span>
+      <span className="mb-1.5 block text-xs font-semibold text-ops-800">{label}</span>
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sand-500">{icon}</span>
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>
         <input
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="w-full rounded-lg border border-sand-200 bg-white py-2.5 pl-10 pr-3 text-sm text-ops-900 outline-none transition-colors placeholder:text-sand-300 focus:border-sea-400 focus:ring-2 focus:ring-sea-200/60"
+          className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm text-ops-900 outline-none transition-colors placeholder:text-slate-400 focus:border-sea-500 focus:ring-2 focus:ring-sea-200/60"
         />
       </div>
     </label>

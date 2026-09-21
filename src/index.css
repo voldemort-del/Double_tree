@@ -6,26 +6,30 @@
 
 /* ── Design Tokens ─────────────────────────────────────────── */
 :root {
-  /* Deep Navy */
-  --navy-900: #0f1e35;
-  --navy-800: #1e3050;
-  --navy-700: #294061;
-  --navy-600: #355275;
-  --navy-500: #456890;
+  /* Mediterranean Deep Navy */
+  --navy-900: #090d16;
+  --navy-800: #0f1e35;
+  --navy-700: #162a4a;
+  --navy-600: #1e3a63;
+  --navy-500: #294d82;
 
-  /* Warm Gold */
-  --gold-600: #9e641a;
-  --gold-500: #c08020;
-  --gold-400: #d9a232;
-  --gold-300: #e5bc58;
-  --gold-200: #f0d795;
+  /* Ocean Azure */
+  --sea-600: #0369a1;
+  --sea-500: #0284c7;
+  --sea-400: #38bdf8;
+  --sea-300: #7dd3fc;
+  --sea-100: #e0f2fe;
 
-  /* Champagne surface */
-  --champagne-50:  #fdf9f2;
-  --champagne-100: #f8f0e0;
+  /* Warm Amber Gold Accent */
+  --gold-600: #b45309;
+  --gold-500: #d97706;
+  --gold-400: #f59e0b;
+  --gold-300: #fbbf24;
+  --gold-200: #fde68a;
 
-  --accent-gold: #c08020;
-  --accent-gold-light: rgba(192,128,32,0.12);
+  /* Clean Surfaces */
+  --surface-bg: #f8fafc;
+  --surface-card: #ffffff;
 }
 
 @layer base {
@@ -35,11 +39,13 @@
   }
   body {
     font-family: 'Inter', system-ui, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
   }
 
-  /* Subtle gold focus ring across all interactive elements */
+  /* Accessible focus ring */
   *:focus-visible {
-    outline: 2px solid var(--gold-400);
+    outline: 2px solid #0284c7;
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -49,7 +55,7 @@
   /* ── Scrollbars ─────────────────────── */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(15, 30, 53, 0.18) transparent;
+    scrollbar-color: rgba(15, 23, 42, 0.20) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 5px;
@@ -59,21 +65,21 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgba(15, 30, 53, 0.18);
+    background-color: rgba(15, 23, 42, 0.20);
     border-radius: 99px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(15, 30, 53, 0.30);
+    background-color: rgba(15, 23, 42, 0.35);
   }
 
-  /* ── Gold shimmer text effect ───────── */
+  /* ── Accent shimmer text effect ───────── */
   .text-gold-shimmer {
     background: linear-gradient(
       90deg,
-      var(--gold-600) 0%,
-      var(--gold-300) 40%,
-      var(--gold-600) 60%,
-      var(--gold-400) 100%
+      #0369a1 0%,
+      #38bdf8 40%,
+      #0369a1 60%,
+      #0284c7 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -82,36 +88,38 @@
     animation: shimmer 3s linear infinite;
   }
 
-  /* ── Gold accent border ─────────────── */
+  /* ── Accent border ─────────────── */
   .border-gold {
-    border-color: var(--gold-400);
+    border-color: #d97706;
   }
 
   /* ── Navy glass card ────────────────── */
   .card-navy {
-    background: rgba(30, 48, 80, 0.85);
+    background: rgba(15, 23, 42, 0.94);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(229, 188, 88, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
 
-  /* ── Champagne glass card (guest UI) ── */
+  /* ── Clean guest card ── */
   .card-champagne {
-    background: rgba(253, 249, 242, 0.90);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(192, 128, 32, 0.12);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
   }
 
-  /* ── Premium button ─────────────────── */
+  /* ── Primary Action Button (High Contrast & Clear) ─────────────────── */
   .btn-gold {
-    background: linear-gradient(135deg, #c08020 0%, #d9a232 60%, #c08020 100%);
-    color: #fff;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%);
+    color: #ffffff;
     font-weight: 600;
     letter-spacing: 0.02em;
-    transition: filter 0.2s, transform 0.15s;
+    box-shadow: 0 4px 12px 0 rgba(2, 132, 199, 0.30);
+    transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
   }
   .btn-gold:hover {
     filter: brightness(1.08);
     transform: translateY(-1px);
+    box-shadow: 0 6px 18px 0 rgba(2, 132, 199, 0.40);
   }
   .btn-gold:active {
     transform: translateY(0);
@@ -120,8 +128,8 @@
 
   /* ── Navy button ────────────────────── */
   .btn-navy {
-    background: linear-gradient(135deg, #1e3050 0%, #294061 100%);
-    color: #fff;
+    background: linear-gradient(135deg, #0f1e35 0%, #162a4a 100%);
+    color: #ffffff;
     font-weight: 600;
     transition: filter 0.2s, transform 0.15s;
   }
@@ -130,20 +138,19 @@
     transform: translateY(-1px);
   }
 
-  /* ── Gold divider line ──────────────── */
+  /* ── Divider line ──────────────── */
   .divider-gold {
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold-300), transparent);
-    opacity: 0.5;
+    background: linear-gradient(90deg, transparent, rgba(2, 132, 199, 0.30), transparent);
   }
 
   /* ── Subtle navy gradient background ── */
   .bg-navy-gradient {
-    background: linear-gradient(160deg, #0f1e35 0%, #1e3050 50%, #294061 100%);
+    background: linear-gradient(160deg, #090d16 0%, #0f1e35 50%, #162a4a 100%);
   }
 
-  /* ── Champagne page background ──────── */
+  /* ── Clean, luminous page background (guest UI) ──────── */
   .bg-champagne-gradient {
-    background: radial-gradient(ellipse at 30% 0%, #f8f0e0 0%, #fdf9f2 60%);
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   }
 }

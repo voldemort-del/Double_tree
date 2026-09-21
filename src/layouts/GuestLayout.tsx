@@ -18,12 +18,12 @@ export function GuestLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-champagne-gradient">
       <ToastContainer />
 
-      {/* ── Header ─ Warm Ivory + Gold ───────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-sand-200/70 bg-white/85 backdrop-blur-md shadow-sm">
+      {/* ── Header ─ Luminous White & Mediterranean Ocean Accent ─────── */}
+      <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <RouterLink to="/guest/dashboard" className="flex items-center gap-3">
-            {/* Gold icon mark */}
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sea-400 to-sea-600 shadow-gold-glow">
+            {/* Ocean icon mark */}
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sea-500 to-sea-700 shadow-gold-glow">
               <Waves className="h-5 w-5 text-white" />
             </div>
             <div className="leading-tight">
@@ -31,7 +31,7 @@ export function GuestLayout({ children }: { children: ReactNode }) {
                 <p className="font-serif text-base font-semibold text-ops-900 tracking-wide">{hotelInfo.name}</p>
                 <ConnectionIndicator />
               </div>
-              <p className="text-[10px] text-sea-600 font-medium tracking-widest uppercase">Digital Concierge</p>
+              <p className="text-[10px] text-sea-700 font-semibold tracking-widest uppercase">Digital Concierge</p>
             </div>
           </RouterLink>
 
@@ -41,18 +41,18 @@ export function GuestLayout({ children }: { children: ReactNode }) {
             <NavLink to="/guest/concierge" active={isActive('/guest/concierge')} icon={<MessageCircle  className="h-4 w-4" />} label="Concierge" />
             <NavLink to="/guest/requests"  active={isActive('/guest/requests')}  icon={<ClipboardList  className="h-4 w-4" />} label="Requests"  />
 
-            <div className="ml-2 flex items-center gap-2 border-l border-sand-200 pl-3">
+            <div className="ml-2 flex items-center gap-2 border-l border-slate-200 pl-3">
               <div className="hidden text-right sm:block">
                 <p className="text-xs font-semibold text-ops-900">{session.name}</p>
-                <p className="text-[11px] text-sand-600">Room {session.roomNumber}</p>
+                <p className="text-[11px] font-medium text-ops-500">Room {session.roomNumber}</p>
               </div>
               {/* Avatar */}
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sea-400 to-sea-600 text-xs font-bold text-white shadow-gold-glow">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sea-500 to-sea-700 text-xs font-bold text-white shadow-sm">
                 {session.name.split(' ').map((p) => p[0]).join('').slice(0, 2)}
               </div>
               <button
                 onClick={() => { logout(); navigate('/guest/login'); }}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-sand-500 transition-colors hover:bg-sand-100 hover:text-ops-900"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-ops-900"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -74,8 +74,8 @@ function NavLink({ to, active, icon, label }: { to: string; active: boolean; ico
       to={to}
       className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
         active
-          ? 'bg-sea-50 text-sea-700 border border-sea-200 shadow-sm'
-          : 'text-ops-600 hover:bg-sand-100 hover:text-ops-900'
+          ? 'bg-sea-50 text-sea-700 border border-sea-200 font-semibold shadow-sm'
+          : 'text-ops-600 hover:bg-slate-100 hover:text-ops-900'
       }`}
     >
       {icon}
