@@ -443,7 +443,7 @@ GENERAL RULES:
     };
 
     const abortCtrl = new AbortController();
-    const timeoutId = setTimeout(() => abortCtrl.abort(), 15000);
+    const timeoutId = setTimeout(() => abortCtrl.abort(), 30000);
 
     const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
