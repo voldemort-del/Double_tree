@@ -33,6 +33,7 @@ import {
   Flame,
   Shield,
   ArrowRight,
+  UtensilsCrossed,
   Search,
   Filter,
   X,
@@ -120,8 +121,16 @@ export function ManagerView() {
           <p className="text-sm text-ops-400">Hotel-wide operational visibility · DoubleTree by Hilton Malta</p>
         </div>
 
-        {/* Time range + refresh */}
+        {/* Time range + menu + refresh */}
         <div className="flex items-center gap-2">
+          <RouterLink
+            to="/staff/menu"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-ops-200 bg-white px-3 py-1.5 text-xs font-semibold text-ops-700 shadow-sm hover:bg-ops-50 transition-colors"
+          >
+            <UtensilsCrossed className="h-3.5 w-3.5 text-ops-500" />
+            <span>Manage Menu & Bar</span>
+          </RouterLink>
+
           <div className="flex rounded-lg border border-ops-200 bg-white text-xs font-medium overflow-hidden">
             {(['today', '7d', '30d'] as TimeRange[]).map((r) => (
               <button

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { MenuItem, MenuVenue } from '@/types';
 import {
   getMenuItems,
@@ -8,24 +8,33 @@ import {
   toggleMenuItemAvailability,
   type CreateMenuItemInput,
 } from '@/services/menuService';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import {
+  UtensilsCrossed,
+  Wine,
+  Plus,
+  Edit2,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Search,
+  Sparkles,
+  ChefHat,
+  ShieldCheck,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 
 const HOTEL_ID = 'a0000000-0000-0000-0000-000000000001';
 
 const RESTAURANT_CATEGORIES = ['Starters', 'Mains', 'Desserts'];
 const BAR_CATEGORIES = ['Cocktails', 'Wine', 'Beer', 'Soft Drinks', 'Hot Drinks'];
 
-const VENUE_LABELS: Record<MenuVenue, string> = {
-  restaurant: 'Restaurant',
-  bar: 'Bar',
-  room_service: 'Room Service',
-  pool_bar: 'Pool Bar',
-};
-
 interface ItemModalProps {
   item?: MenuItem | null;
   venue: MenuVenue;
-  onSave: (data: CreateMenuItemInput | Partial<MenuItem>) => void;
+  onSave: (data: any) => Promise<void>;
   onClose: () => void;
 }
 
@@ -46,123 +55,143 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name.trim()) return;
     setSaving(true);
     await onSave({
       ...form,
       price: parseFloat(form.price) || 0,
       hotelId: HOTEL_ID,
-    } as any);
+    });
     setSaving(false);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-slate-800 border border-white/10 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">
-            {item ? 'Edit Menu Item' : 'Add Menu Item'}
-          </h3>
-          <button onClick={onClose} className="text-white/40 hover:text-white/80 transition-colors text-2xl leading-none">×</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ops-900/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-ops-200 bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-ops-100 px-6 py-4">
+          <div className="flex items-center gap-2">
+            <ChefHat className="h-5 w-5 text-ops-600" />
+            <h3 className="text-base font-semibold text-ops-900">
+              {item ? 'Edit Product' : 'Add New Product'}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-ops-400 hover:bg-ops-100 hover:text-ops-600"
+          >
+            ✕
+          </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-white/50 mb-1">Venue</label>
+              <label className="block text-xs font-semibold text-ops-700 mb-1">Venue</label>
               <select
                 value={form.venue}
-                onChange={e => setForm(f => ({ ...f, venue: e.target.value as MenuVenue, category: e.target.value === 'bar' ? BAR_CATEGORIES[0] : RESTAURANT_CATEGORIES[0] }))}
-                className="w-full bg-slate-700 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500/50"
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    venue: e.target.value as MenuVenue,
+                    category: e.target.value === 'bar' ? BAR_CATEGORIES[0] : RESTAURANT_CATEGORIES[0],
+                  }))
+                }
+                className="w-full rounded-lg border border-ops-200 bg-white px-3 py-2 text-xs text-ops-900 focus:border-ops-600 focus:outline-none"
               >
-                <option value="restaurant">Restaurant</option>
-                <option value="bar">Bar</option>
+                <option value="restaurant">Restaurant (Dining)</option>
+                <option value="bar">Bar (Beverages)</option>
               </select>
             </div>
+
             <div>
-              <label className="block text-xs font-medium text-white/50 mb-1">Category</label>
+              <label className="block text-xs font-semibold text-ops-700 mb-1">Category</label>
               <select
                 value={form.category}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                className="w-full bg-slate-700 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500/50"
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                className="w-full rounded-lg border border-ops-200 bg-white px-3 py-2 text-xs text-ops-900 focus:border-ops-600 focus:outline-none"
               >
-                {(form.venue === 'bar' ? BAR_CATEGORIES : RESTAURANT_CATEGORIES).map(c => (
-                  <option key={c} value={c}>{c}</option>
+                {(form.venue === 'bar' ? BAR_CATEGORIES : RESTAURANT_CATEGORIES).map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1">Item Name</label>
+            <label className="block text-xs font-semibold text-ops-700 mb-1">Product Name</label>
             <input
               type="text"
               required
+              placeholder="e.g. Spaghetti Carbonara or Aperol Spritz"
               value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="e.g. Spaghetti Carbonara"
-              className="w-full bg-slate-700 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-amber-500/50"
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              className="w-full rounded-lg border border-ops-200 px-3 py-2 text-xs text-ops-900 placeholder:text-ops-300 focus:border-ops-600 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1">Description</label>
+            <label className="block text-xs font-semibold text-ops-700 mb-1">Description & Ingredients</label>
             <textarea
               rows={2}
+              placeholder="Short description, dietary info, or ingredients..."
               value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              placeholder="Short description..."
-              className="w-full bg-slate-700 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-amber-500/50 resize-none"
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              className="w-full rounded-lg border border-ops-200 px-3 py-2 text-xs text-ops-900 placeholder:text-ops-300 focus:border-ops-600 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1">Price (€)</label>
+            <label className="block text-xs font-semibold text-ops-700 mb-1">Price (€ EUR)</label>
             <input
               type="number"
               required
               min="0"
-              step="0.50"
-              value={form.price}
-              onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+              step="0.25"
               placeholder="0.00"
-              className="w-full bg-slate-700 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:border-amber-500/50"
+              value={form.price}
+              onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+              className="w-full rounded-lg border border-ops-200 px-3 py-2 text-xs text-ops-900 placeholder:text-ops-300 focus:border-ops-600 focus:outline-none"
             />
           </div>
 
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
+          <div className="flex gap-6 pt-1">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-ops-700">
               <input
                 type="checkbox"
                 checked={form.available}
-                onChange={e => setForm(f => ({ ...f, available: e.target.checked }))}
-                className="w-4 h-4 rounded accent-amber-500"
+                onChange={(e) => setForm((f) => ({ ...f, available: e.target.checked }))}
+                className="h-4 w-4 rounded border-ops-300 text-ops-600 focus:ring-ops-500"
               />
-              <span className="text-sm text-white/70">Available</span>
+              <span>Currently In Stock (Available to Order)</span>
             </label>
-            <label className="flex items-center gap-2 cursor-pointer">
+
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-ops-700">
               <input
                 type="checkbox"
                 checked={form.availableForRoomService}
-                onChange={e => setForm(f => ({ ...f, availableForRoomService: e.target.checked }))}
-                className="w-4 h-4 rounded accent-amber-500"
+                onChange={(e) => setForm((f) => ({ ...f, availableForRoomService: e.target.checked }))}
+                className="h-4 w-4 rounded border-ops-300 text-ops-600 focus:ring-ops-500"
               />
-              <span className="text-sm text-white/70">Room Service</span>
+              <span>Available for Room Service</span>
             </label>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4 border-t border-ops-100">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-medium hover:bg-white/5 transition-colors"
+              className="flex-1 rounded-lg border border-ops-200 py-2 text-xs font-semibold text-ops-600 hover:bg-ops-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-semibold transition-colors disabled:opacity-50"
+              className="flex-1 rounded-lg bg-ops-900 py-2 text-xs font-semibold text-white hover:bg-ops-800 disabled:opacity-50"
             >
-              {saving ? 'Saving...' : item ? 'Save Changes' : 'Add Item'}
+              {saving ? 'Saving...' : item ? 'Save Changes' : 'Create Product'}
             </button>
           </div>
         </form>
@@ -172,13 +201,18 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
 }
 
 export default function MenuManagement() {
+  const { session } = useAuth();
+  const isManager = session?.type === 'manager';
+  const isFoodAndBeverage = session?.department === 'Food & Beverage';
+
   const [activeVenue, setActiveVenue] = useState<'restaurant' | 'bar'>('restaurant');
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -190,23 +224,31 @@ export default function MenuManagement() {
   useEffect(() => {
     loadItems();
 
-    // Realtime subscription
     const channel = supabase
-      .channel('menu-realtime')
+      .channel('menu-mgmt-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
         loadItems();
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [loadItems]);
 
-  const venueItems = items.filter(i => i.venue === activeVenue);
+  const venueItems = useMemo(() => items.filter((i) => i.venue === activeVenue), [items, activeVenue]);
   const categories = activeVenue === 'bar' ? BAR_CATEGORIES : RESTAURANT_CATEGORIES;
-  const filteredItems =
-    activeCategory === 'All'
-      ? venueItems
-      : venueItems.filter(i => i.category === activeCategory);
+
+  const filteredItems = useMemo(() => {
+    return venueItems.filter((item) => {
+      const matchCat = activeCategory === 'All' || item.category === activeCategory;
+      const matchQuery =
+        searchQuery.trim() === '' ||
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchQuery;
+    });
+  }, [venueItems, activeCategory, searchQuery]);
 
   const handleSave = async (data: any) => {
     if (editingItem) {
@@ -227,164 +269,264 @@ export default function MenuManagement() {
     await loadItems();
   };
 
-  const handleToggle = async (item: MenuItem) => {
+  const handleToggleStock = async (item: MenuItem) => {
+    setTogglingId(item.id);
     await toggleMenuItemAvailability(item.id, !item.available);
     await loadItems();
+    setTogglingId(null);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this menu item? This cannot be undone.')) return;
-    setDeleting(id);
+    if (!confirm('Are you sure you want to remove this item from the catalog?')) return;
     await deleteMenuItem(id);
-    setDeleting(null);
     await loadItems();
   };
 
-  const availableCount = venueItems.filter(i => i.available).length;
-  const unavailableCount = venueItems.filter(i => !i.available).length;
+  const totalInVenue = venueItems.length;
+  const inStockCount = venueItems.filter((i) => i.available).length;
+  const soldOutCount = venueItems.filter((i) => !i.available).length;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-ops-200 pb-5">
         <div>
-          <h2 className="text-xl font-bold text-white">Menu Management</h2>
-          <p className="text-sm text-white/40 mt-0.5">
-            {availableCount} available · {unavailableCount} unavailable
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold text-ops-900">Restaurant & Bar Product Catalog</h1>
+            <span className="inline-flex items-center gap-1 rounded-md bg-ops-100 px-2 py-0.5 text-xs font-semibold text-ops-700">
+              {isManager ? (
+                <>
+                  <ShieldCheck className="h-3.5 w-3.5 text-ops-600" />
+                  Manager Controls
+                </>
+              ) : isFoodAndBeverage ? (
+                <>
+                  <ChefHat className="h-3.5 w-3.5 text-amber-600" />
+                  Kitchen & Bar Operations
+                </>
+              ) : (
+                'Staff Operations'
+              )}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-ops-500">
+            Add, update, 86 (mark sold out), or remove dishes and drinks. All availability updates instantly sync with the Concierge AI and Guest Dining view.
           </p>
         </div>
+
         <button
-          onClick={() => { setEditingItem(null); setShowModal(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-black text-sm font-semibold rounded-xl transition-colors shadow-lg shadow-amber-500/20"
+          onClick={() => {
+            setEditingItem(null);
+            setShowModal(true);
+          }}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-ops-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-ops-800 transition-colors"
         >
-          <span className="text-lg leading-none">+</span>
-          Add Item
+          <Plus className="h-4 w-4" />
+          <span>Add Product</span>
         </button>
       </div>
 
-      {/* Venue Tabs */}
-      <div className="flex gap-2 bg-white/5 rounded-xl p-1">
-        {(['restaurant', 'bar'] as const).map(v => (
-          <button
-            key={v}
-            onClick={() => { setActiveVenue(v); setActiveCategory('All'); }}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeVenue === v
-                ? 'bg-amber-500 text-black shadow-lg'
-                : 'text-white/50 hover:text-white/80'
-            }`}
-          >
-            {v === 'restaurant' ? '🍽️ Restaurant' : '🍹 Bar'}
-          </button>
-        ))}
-      </div>
-
-      {/* Category Filter */}
-      <div className="flex gap-2 flex-wrap">
-        {['All', ...categories].map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-              activeCategory === cat
-                ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                : 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/20'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Items Grid */}
-      {loading ? (
-        <div className="text-center py-12 text-white/30">Loading menu...</div>
-      ) : filteredItems.length === 0 ? (
-        <div className="text-center py-12 text-white/30">
-          No items in this category yet.
-          <button
-            onClick={() => { setEditingItem(null); setShowModal(true); }}
-            className="block mx-auto mt-3 text-amber-500 hover:text-amber-400 text-sm font-medium"
-          >
-            + Add the first item
-          </button>
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="rounded-xl border border-ops-200 bg-white p-4 shadow-sm">
+          <p className="text-xs font-medium text-ops-500">Total Products in {activeVenue === 'restaurant' ? 'Restaurant' : 'Bar'}</p>
+          <p className="mt-1 text-2xl font-bold text-ops-900">{totalInVenue}</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-3">
-          {filteredItems.map(item => (
-            <div
-              key={item.id}
-              className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${
-                item.available
-                  ? 'bg-white/5 border-white/10 hover:bg-white/8'
-                  : 'bg-white/2 border-white/5 opacity-60'
+        <div className="rounded-xl border border-ops-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-emerald-700">In Stock & Active</p>
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          </div>
+          <p className="mt-1 text-2xl font-bold text-emerald-600">{inStockCount}</p>
+        </div>
+        <div className="rounded-xl border border-ops-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-red-700">86'd / Sold Out</p>
+            <XCircle className="h-4 w-4 text-red-500" />
+          </div>
+          <p className="mt-1 text-2xl font-bold text-red-600">{soldOutCount}</p>
+        </div>
+      </div>
+
+      {/* Venue Switcher Tabs */}
+      <div className="flex gap-2 border-b border-ops-200">
+        <button
+          onClick={() => {
+            setActiveVenue('restaurant');
+            setActiveCategory('All');
+          }}
+          className={`flex items-center gap-2 border-b-2 py-2.5 px-4 text-xs font-semibold transition-colors ${
+            activeVenue === 'restaurant'
+              ? 'border-ops-900 text-ops-900'
+              : 'border-transparent text-ops-500 hover:text-ops-700'
+          }`}
+        >
+          <UtensilsCrossed className="h-4 w-4" />
+          <span>Azure Restaurant & Kitchen Menu</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveVenue('bar');
+            setActiveCategory('All');
+          }}
+          className={`flex items-center gap-2 border-b-2 py-2.5 px-4 text-xs font-semibold transition-colors ${
+            activeVenue === 'bar'
+              ? 'border-ops-900 text-ops-900'
+              : 'border-transparent text-ops-500 hover:text-ops-700'
+          }`}
+        >
+          <Wine className="h-4 w-4" />
+          <span>The Moorings & Pool Bar Menu</span>
+        </button>
+      </div>
+
+      {/* Search and Filter Row */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-ops-200">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {['All', ...categories].map((c) => (
+            <button
+              key={c}
+              onClick={() => setActiveCategory(c)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                activeCategory === c
+                  ? 'bg-ops-900 text-white'
+                  : 'bg-ops-100 text-ops-600 hover:bg-ops-200'
               }`}
             >
-              {/* Availability toggle */}
-              <button
-                onClick={() => handleToggle(item)}
-                className={`mt-0.5 w-10 h-6 rounded-full transition-all flex-shrink-0 relative ${
-                  item.available ? 'bg-emerald-500' : 'bg-white/20'
-                }`}
-                title={item.available ? 'Mark unavailable' : 'Mark available'}
-              >
-                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${
-                  item.available ? 'left-4' : 'left-0.5'
-                }`} />
-              </button>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-sm font-semibold text-white">{item.name}</span>
-                    {item.availableForRoomService && (
-                      <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/20 font-medium">Room Service</span>
-                    )}
-                    {!item.available && (
-                      <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded-full border border-red-500/20 font-medium">Unavailable</span>
-                    )}
-                  </div>
-                  <span className="text-sm font-bold text-amber-400 flex-shrink-0">€{item.price.toFixed(2)}</span>
-                </div>
-                <p className="text-xs text-white/40 mt-0.5 leading-relaxed">{item.description}</p>
-                <span className="text-[10px] text-white/25 mt-1 inline-block">{item.category}</span>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-1 flex-shrink-0">
-                <button
-                  onClick={() => { setEditingItem(item); setShowModal(true); }}
-                  className="p-2 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors"
-                  title="Edit"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  disabled={deleting === item.id}
-                  className="p-2 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                  title="Delete"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+              {c}
+            </button>
           ))}
+        </div>
+
+        <div className="relative min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ops-400" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-ops-200 pl-8 pr-3 py-1.5 text-xs text-ops-900 placeholder:text-ops-400 focus:border-ops-600 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Products Table/List */}
+      {loading ? (
+        <div className="flex min-h-[250px] flex-col items-center justify-center gap-2 text-ops-500">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <p className="text-xs">Loading products...</p>
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-ops-200 bg-white p-8 text-center text-ops-400">
+          <p className="text-xs">No products match your filter.</p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-ops-200 bg-white shadow-sm">
+          <table className="w-full text-left text-xs">
+            <thead className="border-b border-ops-100 bg-ops-50/80 text-ops-600">
+              <tr>
+                <th className="px-4 py-3 font-semibold">Status / Stock</th>
+                <th className="px-4 py-3 font-semibold">Product</th>
+                <th className="px-4 py-3 font-semibold">Category</th>
+                <th className="px-4 py-3 font-semibold">Price</th>
+                <th className="px-4 py-3 font-semibold">Room Service</th>
+                <th className="px-4 py-3 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ops-100">
+              {filteredItems.map((item) => (
+                <tr key={item.id} className="hover:bg-ops-50/50 transition-colors">
+                  {/* Toggle availability button */}
+                  <td className="px-4 py-3.5 whitespace-nowrap">
+                    <button
+                      onClick={() => handleToggleStock(item)}
+                      disabled={togglingId === item.id}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${
+                        item.available
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                      }`}
+                    >
+                      {item.available ? (
+                        <>
+                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                          <span>In Stock</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-3 w-3 text-red-500" />
+                          <span>86'd (Sold Out)</span>
+                        </>
+                      )}
+                    </button>
+                  </td>
+
+                  <td className="px-4 py-3.5">
+                    <div className="font-semibold text-ops-900">{item.name}</div>
+                    <div className="text-[11px] text-ops-400 mt-0.5 max-w-sm truncate">
+                      {item.description}
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3.5 whitespace-nowrap text-ops-600">
+                    <span className="rounded-md bg-ops-100 px-2 py-0.5 text-[11px] font-medium">
+                      {item.category}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-3.5 whitespace-nowrap font-semibold text-ops-900">
+                    €{item.price.toFixed(2)}
+                  </td>
+
+                  <td className="px-4 py-3.5 whitespace-nowrap">
+                    {item.availableForRoomService ? (
+                      <span className="text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 font-medium">
+                        Yes
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-ops-400">Venue only</span>
+                    )}
+                  </td>
+
+                  <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingItem(item);
+                          setShowModal(true);
+                        }}
+                        className="rounded p-1.5 text-ops-400 hover:bg-ops-100 hover:text-ops-700 transition-colors"
+                        title="Edit product"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="rounded p-1.5 text-ops-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        title="Remove product"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Modal */}
+      {/* Add / Edit Modal */}
       {showModal && (
         <ItemModal
           item={editingItem}
           venue={activeVenue}
           onSave={handleSave}
-          onClose={() => { setShowModal(false); setEditingItem(null); }}
+          onClose={() => {
+            setShowModal(false);
+            setEditingItem(null);
+          }}
         />
       )}
     </div>

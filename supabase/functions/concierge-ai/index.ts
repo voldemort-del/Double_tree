@@ -229,18 +229,20 @@ Deno.serve(async (req) => {
 
       const { data: menuItems } = await supabase
         .from('menu_items')
-        .select('venue, category, name, description, price, available_for_room_service')
+        .select('venue, category, name, description, price, available, available_for_room_service')
         .eq('hotel_id', hotelId)
-        .eq('available', true)
         .in('venue', venuesToFetch)
         .order('venue')
         .order('category')
         .order('display_order');
 
       if (menuItems && menuItems.length > 0) {
-        // Group by venue and category for readable prompt context
+        const availableItems = menuItems.filter((i: any) => i.available);
+        const soldOutItems = menuItems.filter((i: any) => !i.available);
+
+        // Group available items
         const grouped: Record<string, Record<string, string[]>> = {};
-        for (const item of menuItems) {
+        for (const item of availableItems) {
           if (!grouped[item.venue]) grouped[item.venue] = {};
           if (!grouped[item.venue][item.category]) grouped[item.venue][item.category] = [];
           const roomServiceTag = item.available_for_room_service ? ' [Room Service ✓]' : '';
@@ -251,13 +253,21 @@ Deno.serve(async (req) => {
 
         const menuLines: string[] = [];
         for (const [venue, categories] of Object.entries(grouped)) {
-          const venueName = venue === 'restaurant' ? 'AZURE RESTAURANT MENU' : 'BAR MENU (The Moorings / Limonata Pool Bar)';
+          const venueName = venue === 'restaurant' ? 'AZURE RESTAURANT MENU (AVAILABLE)' : 'BAR MENU (AVAILABLE)';
           menuLines.push(`\n${venueName}:`);
           for (const [category, items] of Object.entries(categories)) {
             menuLines.push(`  ${category}:`);
             menuLines.push(...items.map(i => `    ${i}`));
           }
         }
+
+        if (soldOutItems.length > 0) {
+          menuLines.push('\nCURRENTLY 86\'d / SOLD OUT (Kitchen/Bar marked out of stock):');
+          for (const item of soldOutItems) {
+            menuLines.push(`  ✗ ${item.name} (${item.venue}) — SOLD OUT TODAY`);
+          }
+        }
+
         menuContext = menuLines.join('\n');
       }
     }
@@ -322,6 +332,7 @@ FOOD & BEVERAGE ORDERING RULES:
 9. Once the guest specifies their order items and quantities, set actionRequired=true, department="Food & Beverage".
 10. If the guest is asking for room service, only offer items marked [Room Service ✓].
 11. Include the full order details (items, quantities, prices) in the description field.
+11b. SOLD OUT ITEMS: If a guest requests an item that is listed under 'CURRENTLY 86\'d / SOLD OUT', do NOT place an order (set actionRequired=false). Explicitly inform the guest that the kitchen/bar has run out of that item for today, and suggest an available alternative from the live menu.
 
 BOOKING RULES (Spa, Gym, Pool, Beach Club, Kids Club):
 12. When a guest wants to book a service, ALWAYS ask for their preferred date and time if not provided.

@@ -26,6 +26,14 @@ export function GuestConcierge() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const prefill = sessionStorage.getItem('concierge_prefill_prompt');
+    if (prefill) {
+      setInput(prefill);
+      sessionStorage.removeItem('concierge_prefill_prompt');
+    }
+  }, []);
+
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
