@@ -10,9 +10,11 @@ export interface StaffWithDepartment extends StaffProfileRow {
   departmentName?: string;
 }
 
-function getDepartmentName(departments: StaffWithDepartment['departments']): string | undefined {
-  if (Array.isArray(departments)) return departments[0]?.name;
-  return departments?.name;
+function departmentNameFromRow(row: { departments?: { name: string } | { name: string }[] | null }): string | undefined {
+  const d = row.departments;
+  if (!d) return undefined;
+  if (Array.isArray(d)) return d[0]?.name;
+  return d.name;
 }
 
 const DEMO_STAFF: StaffWithDepartment[] = [
@@ -20,9 +22,9 @@ const DEMO_STAFF: StaffWithDepartment[] = [
     id: 'st-1',
     hotel_id: 'a0000000-0000-0000-0000-000000000001',
     user_id: null,
-    first_name: 'Marco',
-    last_name: 'Bonnici',
-    email: 'marco.bonnici@doubletreemalta.com',
+    first_name: 'Maria',
+    last_name: 'Vella',
+    email: 'maria.vella@doubletreemalta.com',
     role: 'staff',
     department_id: 'dept-fb',
     username: 'staff',
@@ -34,9 +36,9 @@ const DEMO_STAFF: StaffWithDepartment[] = [
     id: 'st-2',
     hotel_id: 'a0000000-0000-0000-0000-000000000001',
     user_id: null,
-    first_name: 'Elena',
-    last_name: 'Borg',
-    email: 'elena.borg@doubletreemalta.com',
+    first_name: 'Daniel',
+    last_name: 'Zahra',
+    email: 'daniel.zahra@doubletreemalta.com',
     role: 'staff',
     department_id: 'dept-fb',
     username: 'staff2',
@@ -62,9 +64,9 @@ const DEMO_STAFF: StaffWithDepartment[] = [
     id: 'st-4',
     hotel_id: 'a0000000-0000-0000-0000-000000000001',
     user_id: null,
-    first_name: 'Daniel',
-    last_name: 'Zahra',
-    email: 'daniel.zahra@doubletreemalta.com',
+    first_name: 'Marco',
+    last_name: 'Bonnici',
+    email: 'marco.bonnici@doubletreemalta.com',
     role: 'staff',
     department_id: 'dept-fb',
     username: 'staff4',
@@ -76,9 +78,9 @@ const DEMO_STAFF: StaffWithDepartment[] = [
     id: 'st-5',
     hotel_id: 'a0000000-0000-0000-0000-000000000001',
     user_id: null,
-    first_name: 'Maria',
-    last_name: 'Vella',
-    email: 'maria.vella@doubletreemalta.com',
+    first_name: 'Elena',
+    last_name: 'Borg',
+    email: 'elena.borg@doubletreemalta.com',
     role: 'staff',
     department_id: 'dept-fb',
     username: 'staff5',
@@ -117,7 +119,8 @@ export async function getStaffByHotel(hotelId: string): Promise<StaffWithDepartm
       if (!error && data && data.length > 0) {
         return (data as any[]).map((s) => ({
           ...s,
-          departmentName: s.role === 'staff' ? 'Food & Beverage' : getDepartmentName(s.departments),
+          departments: Array.isArray(s.departments) ? s.departments[0] ?? null : s.departments,
+          departmentName: s.role === 'staff' ? 'Food & Beverage' : departmentNameFromRow(s),
         }));
       }
     } catch (err) {
@@ -141,9 +144,11 @@ export async function getStaffById(staffId: string): Promise<StaffWithDepartment
         .maybeSingle();
 
       if (!error && data) {
+        const row = data as any;
         return {
-          ...data,
-          departmentName: data.role === 'staff' ? 'Food & Beverage' : getDepartmentName((data as any).departments),
+          ...row,
+          departments: Array.isArray(row.departments) ? row.departments[0] ?? null : row.departments,
+          departmentName: row.role === 'staff' ? 'Food & Beverage' : departmentNameFromRow(row),
         };
       }
 

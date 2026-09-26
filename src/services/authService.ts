@@ -45,7 +45,7 @@ export async function loginGuest(
         .eq('username', username)
         .maybeSingle();
 
-      if (!error && guest && guest.pin === pin) {
+      if (!error && guest && String(guest.pin).trim() === pin.trim()) {
         // Find active stay
         const { data: stay } = await supabase
           .from('stays')
@@ -165,12 +165,12 @@ export async function loginStaff(
 
   // Demo fallback
   const fallbackMap: Record<string, { id: string; name: string; dept: Department; role: 'staff' | 'manager' }> = {
-    staff:   { id: 'st-1', name: 'Marco Bonnici',  dept: 'Food & Beverage', role: 'staff' },
-    staff2:  { id: 'st-2', name: 'Elena Borg',     dept: 'Food & Beverage', role: 'staff' },
-    staff3:  { id: 'st-3', name: 'Lucia Grech',    dept: 'Food & Beverage', role: 'staff' },
-    staff4:  { id: 'st-4', name: 'Daniel Zahra',   dept: 'Food & Beverage', role: 'staff' },
-    staff5:  { id: 'st-5', name: 'Maria Vella',    dept: 'Food & Beverage', role: 'staff' },
-    manager: { id: 'st-mgr', name: 'Antoine Caruana', dept: 'Front Desk',  role: 'manager' },
+    staff:   { id: 'st-1', name: 'Maria Vella',     dept: 'Housekeeping',    role: 'staff' },
+    staff2:  { id: 'st-2', name: 'Daniel Zahra',    dept: 'Maintenance',     role: 'staff' },
+    staff3:  { id: 'st-3', name: 'Lucia Grech',     dept: 'Concierge',       role: 'staff' },
+    staff4:  { id: 'st-4', name: 'Marco Bonnici',   dept: 'Food & Beverage', role: 'staff' },
+    staff5:  { id: 'st-5', name: 'Elena Borg',      dept: 'Spa & Wellness',  role: 'staff' },
+    manager: { id: 'st-mgr', name: 'Antoine Caruana', dept: 'Front Desk',    role: 'manager' },
   };
 
   if (fallbackMap[cleanUsername]) {

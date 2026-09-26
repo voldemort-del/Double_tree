@@ -5,6 +5,7 @@ import { RequestDetailCard } from '@/components/RequestDetailCard';
 import { RequestTimeline } from '@/components/RequestTimeline';
 import { RouterLink } from '@/utils/router';
 import type { HotelRequest } from '@/types';
+import { staffMatchesRequestDepartment } from '@/utils/staffAssignment';
 import { initials } from '@/utils/format';
 import {
   ArrowLeft,
@@ -91,7 +92,7 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
                 <ActionButton
                   onClick={() => handleAction(
                     () => assignRequest(request.id, staffData.staffId, staffName),
-                    { status: 'Assigned', assignedStaffId: staffData.staffId, assignedStaffName: staffName }
+                    { status: 'Assigned', assignedTo: staffData.staffId, assignedStaffName: staffName }
                   )}
                   icon={<UserPlus className="h-4 w-4" />}
                   label="Accept & Assign"
@@ -150,8 +151,13 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
             {/* Assign picker — department-first */}
             {showAssign && (() => {
               const staffOnly = staffList.filter((s) => s.role === 'staff');
-              const matchedStaff = staffOnly;
-              const otherStaff: typeof staffOnly = [];
+              const requestDept = request.department;
+              const matchedStaff = staffOnly.filter((s) =>
+                staffMatchesRequestDepartment(s.departmentName, requestDept),
+              );
+              const otherStaff = staffOnly.filter(
+                (s) => !staffMatchesRequestDepartment(s.departmentName, requestDept),
+              );
 
               const StaffCard = ({ s }: { s: typeof staffOnly[0] }) => {
                 const fullName = `${s.first_name} ${s.last_name}`;
@@ -163,7 +169,7 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
                     onClick={() => {
                       handleAction(
                         () => assignRequest(request.id, s.id, fullName),
-                        { status: 'Assigned', assignedStaffId: s.id, assignedStaffName: fullName }
+                        { status: 'Assigned', assignedTo: s.id, assignedStaffName: fullName }
                       );
                       setShowAssign(false);
                     }}

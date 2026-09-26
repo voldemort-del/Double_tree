@@ -19,6 +19,8 @@ import {
   initials,
 } from '@/utils/format';
 import { RouterLink, navigate } from '@/utils/router';
+import type { StaffWithDepartment } from '@/services/staffService';
+import { staffMatchesRequestDepartment } from '@/utils/staffAssignment';
 import { StatusBadge, PriorityBadge, DepartmentBadge } from '@/components/Badges';
 import {
   Loader2,
@@ -493,7 +495,7 @@ function RequestsTab({
   refresh,
 }: {
   requests: HotelRequest[];
-  staffList: { id: string; first_name: string; last_name: string; role: string; departmentName?: string }[];
+  staffList: StaffWithDepartment[];
   refresh: () => void;
 }) {
   const [search, setSearch] = useState('');
@@ -709,16 +711,31 @@ function RequestsTab({
                 {/* Inline assign picker — Dropdown */}
                 {assignAction?.requestId === r.id && (() => {
                   const eligibleStaff = staffOnly.filter((s) => s.id !== 'st-mgr');
-                  const departmentLabel = 'Kitchen';
+                  const requestDept = r.department;
+                  const matchedStaff = eligibleStaff.filter((s) =>
+                    staffMatchesRequestDepartment(s.departmentName, requestDept),
+                  );
+                  const otherStaff = eligibleStaff.filter(
+                    (s) => !staffMatchesRequestDepartment(s.departmentName, requestDept),
+                  );
+
+                  const activeCountFor = (staffId: string, fullName: string) =>
+                    requests.filter(
+                      (req) =>
+                        (req.assignedTo === staffId ||
+                          req.assignedStaffName?.toLowerCase() === fullName.toLowerCase()) &&
+                        req.status !== 'Completed' &&
+                        req.status !== 'Cancelled',
+                    ).length;
 
                   return (
                     <div className="mt-3 rounded-xl border border-ops-200 bg-white shadow-sm overflow-hidden animate-slide-up">
-                      {/* Header */}
                       <div className="flex items-center justify-between px-4 py-3 bg-ops-50 border-b border-ops-100">
                         <div>
                           <p className="text-xs font-bold text-ops-900">Assign to Staff</p>
                           <p className="text-[11px] text-ops-500 mt-0.5">
-                            <span className="font-semibold text-amber-700">{departmentLabel}</span> order — select a staff member on duty
+                            <span className="font-semibold text-ops-800">{requestDept}</span> request — pick staff from
+                            that department first
                           </p>
                         </div>
                         <button
@@ -763,26 +780,37 @@ function RequestsTab({
                         {/* Dropdown + confirm */}
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                           <div className="relative flex-1">
-                            <UtensilsCrossed className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-500 pointer-events-none" />
+                            <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ops-500 pointer-events-none" />
                             <select
                               value={selectedStaffId}
                               onChange={(event) => setSelectedStaffId(event.target.value)}
-                              className="w-full appearance-none rounded-lg border border-ops-200 bg-ops-50 py-2.5 pl-9 pr-8 text-sm font-medium text-ops-900 outline-none transition-colors focus:border-amber-400 focus:ring-2 focus:ring-amber-100 cursor-pointer"
+                              className="w-full appearance-none rounded-lg border border-ops-200 bg-ops-50 py-2.5 pl-9 pr-8 text-sm font-medium text-ops-900 outline-none transition-colors focus:border-ops-400 focus:ring-2 focus:ring-ops-100 cursor-pointer"
                             >
-                              <option value="" disabled>— Select a staff member —</option>
-                              {eligibleStaff.length > 0 && (
-                                <optgroup label={`${departmentLabel} staff`}>
-                                  {eligibleStaff.map((s) => {
+                              <option value="" disabled>
+                                — Select staff member —
+                              </option>
+                              {matchedStaff.length > 0 && (
+                                <optgroup label={`Recommended — ${requestDept}`}>
+                                  {matchedStaff.map((s) => {
                                     const fullName = `${s.first_name} ${s.last_name}`;
-                                    const activeCount = requests.filter(
-                                      (req) =>
-                                        (req.assignedTo === s.id || req.assignedStaffName?.toLowerCase() === fullName.toLowerCase()) &&
-                                        req.status !== 'Completed' &&
-                                        req.status !== 'Cancelled'
-                                    ).length;
+                                    const activeCount = activeCountFor(s.id, fullName);
                                     return (
                                       <option key={s.id} value={s.id}>
-                                        {fullName} {activeCount === 0 ? '✓ Free' : `· ${activeCount} active`}
+                                        {fullName}
+                                        {activeCount === 0 ? ' ✓ Free' : ` · ${activeCount} active`}
+                                      </option>
+                                    );
+                                  })}
+                                </optgroup>
+                              )}
+                              {otherStaff.length > 0 && (
+                                <optgroup label="Other available staff">
+                                  {otherStaff.map((s) => {
+                                    const fullName = `${s.first_name} ${s.last_name}`;
+                                    const dept = s.departmentName ?? 'General';
+                                    return (
+                                      <option key={s.id} value={s.id}>
+                                        {fullName} ({dept})
                                       </option>
                                     );
                                   })}
@@ -799,7 +827,7 @@ function RequestsTab({
                                 handleAssign(r.id, found.id, `${found.first_name} ${found.last_name}`);
                               }
                             }}
-                            className="flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors flex-shrink-0"
+                            className="flex items-center justify-center gap-1.5 rounded-lg bg-ops-900 hover:bg-ops-800 px-4 py-2.5 text-sm font-semibold text-white transition-colors flex-shrink-0"
                           >
                             <UserPlus className="h-3.5 w-3.5" /> Assign
                           </button>

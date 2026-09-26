@@ -8,6 +8,8 @@ export interface RouteMatch {
   segments: string[];
 }
 
+const NAV_EVENT = 'app:navigate';
+
 function getPath(): string {
   const hash = window.location.hash.replace(/^#/, '');
   if (hash) return hash;
@@ -19,7 +21,16 @@ function getPath(): string {
   return '/';
 }
 
+function notifyRouteChange(): void {
+  window.dispatchEvent(new Event(NAV_EVENT));
+}
+
 export function navigate(path: string): void {
+  const current = getPath();
+  if (current === path) {
+    notifyRouteChange();
+    return;
+  }
   window.location.hash = path;
 }
 
@@ -38,9 +49,11 @@ function useTick(): [number, (n: number) => void] {
     const handler = () => setTick((t) => t + 1);
     window.addEventListener('hashchange', handler);
     window.addEventListener('popstate', handler);
+    window.addEventListener(NAV_EVENT, handler);
     return () => {
       window.removeEventListener('hashchange', handler);
       window.removeEventListener('popstate', handler);
+      window.removeEventListener(NAV_EVENT, handler);
     };
   }, [setTick]);
   return [tick, setTick];

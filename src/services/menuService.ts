@@ -116,8 +116,8 @@ export interface UpdateMenuItemInput {
   price?: number;
   available?: boolean;
   availableForRoomService?: boolean;
-  imageUrl?: string;
   displayOrder?: number;
+  imageUrl?: string | null;
 }
 
 export async function updateMenuItem(id: string, patch: UpdateMenuItemInput): Promise<MenuItem | null> {
@@ -129,8 +129,8 @@ export async function updateMenuItem(id: string, patch: UpdateMenuItemInput): Pr
   if (patch.price !== undefined) updates.price = patch.price;
   if (patch.available !== undefined) updates.available = patch.available;
   if (patch.availableForRoomService !== undefined) updates.available_for_room_service = patch.availableForRoomService;
-  if (patch.imageUrl !== undefined) updates.image_url = patch.imageUrl || null;
   if (patch.displayOrder !== undefined) updates.display_order = patch.displayOrder;
+  if (patch.imageUrl !== undefined) updates.image_url = patch.imageUrl || null;
 
   const { data, error } = await supabase
     .from('menu_items')

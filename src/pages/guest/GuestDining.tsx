@@ -9,10 +9,10 @@ import {
   UtensilsCrossed,
   Wine,
   Sparkles,
-  ShoppingBag,
   CheckCircle2,
   XCircle,
   Search,
+  ShoppingBag,
   ShoppingCart,
 } from 'lucide-react';
 
@@ -180,75 +180,85 @@ export function GuestDining() {
           <p className="text-xs text-slate-400 mt-1">Try another category or search term.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className={`group flex flex-col justify-between rounded-xl border bg-white p-5 transition-all hover:shadow-md ${
+              className={`group flex flex-col overflow-hidden rounded-xl border bg-white transition-all hover:shadow-md ${
                 item.available
                   ? 'border-sand-200 hover:border-sand-300'
                   : 'border-sand-200/60 bg-sand-50/50 opacity-75'
               }`}
             >
-              <div className="mb-4 overflow-hidden rounded-lg bg-sand-100">
-                <img
-                  src={item.imageUrl || `https://images.unsplash.com/photo-${activeVenue === 'restaurant' ? '1504674900247-0877df9cc836' : '1513558161293-cdaf765ed2fd'}?auto=format&fit=crop&w=900&q=80`}
-                  alt={item.name}
-                  className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  loading="lazy"
-                />
+              <div className="relative aspect-[4/3] overflow-hidden bg-sand-100">
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    loading="lazy"
+                    className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+                      item.available ? '' : 'grayscale'
+                    }`}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sand-100 to-sand-200">
+                    {activeVenue === 'bar' ? (
+                      <Wine className="h-10 w-10 text-sand-400" />
+                    ) : (
+                      <UtensilsCrossed className="h-10 w-10 text-sand-400" />
+                    )}
+                  </div>
+                )}
+                <div className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-sm font-bold text-amber-700 shadow-sm backdrop-blur-sm">
+                  €{item.price.toFixed(2)}
+                </div>
+                {item.availableForRoomService && (
+                  <div className="absolute left-2 top-2 inline-flex items-center rounded-md bg-blue-600/90 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                    Room Service
+                  </div>
+                )}
               </div>
-              <div>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-slate-900 group-hover:text-sea-700 transition-colors">
-                        {item.name}
-                      </h3>
-                      {item.availableForRoomService && (
-                        <span className="inline-flex items-center rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                          Room Service
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] font-medium text-slate-400">{item.category}</span>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="text-base font-bold text-amber-700">
-                      €{item.price.toFixed(2)}
-                    </span>
-                  </div>
+
+              <div className="flex flex-1 flex-col justify-between p-4">
+                <div>
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                    {item.category}
+                  </span>
+                  <h3 className="mt-0.5 font-semibold text-slate-900 group-hover:text-sea-700 transition-colors">
+                    {item.name}
+                  </h3>
+                  <p className="mt-1.5 text-xs text-slate-600 leading-relaxed line-clamp-2">
+                    {item.description}
+                  </p>
                 </div>
 
-                <p className="mt-2 text-xs text-slate-600 leading-relaxed">{item.description}</p>
-              </div>
+                <div className="mt-3 flex items-center justify-between pt-3 border-t border-sand-100">
+                  <div className="flex items-center gap-1.5">
+                    {item.available ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Available
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-500">
+                        <XCircle className="h-3.5 w-3.5" />
+                        Sold Out
+                      </span>
+                    )}
+                  </div>
 
-              <div className="mt-4 flex items-center justify-between pt-3 border-t border-sand-100">
-                <div className="flex items-center gap-1.5">
                   {item.available ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Available
-                    </span>
+                    <button
+                      onClick={() => addToCart(item)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-sea-600 hover:bg-sea-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors shadow-sm"
+                    >
+                      <ShoppingBag className="h-3.5 w-3.5" />
+                      <span>Add to Cart</span>
+                    </button>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-500">
-                      <XCircle className="h-3.5 w-3.5" />
-                      Currently Sold Out
-                    </span>
+                    <span className="text-[11px] text-slate-400 italic">Unavailable</span>
                   )}
                 </div>
-
-                {item.available ? (
-                  <button
-                    onClick={() => addToCart(item)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-sea-600 hover:bg-sea-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors shadow-sm"
-                  >
-                    <ShoppingBag className="h-3.5 w-3.5" />
-                    <span>Add to Cart</span>
-                  </button>
-                ) : (
-                  <span className="text-[11px] text-slate-400 italic">Sold out today</span>
-                )}
               </div>
             </div>
           ))}

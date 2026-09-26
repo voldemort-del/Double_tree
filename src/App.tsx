@@ -24,12 +24,11 @@ function Router() {
   const { session, loading } = useAuth();
   const route = useRoute();
 
-  // Redirect to a default while loading
   useEffect(() => {
-    if (!loading && route.path === '/') {
+    if (!loading && (route.path === '/' || route.segments.length === 0)) {
       navigate('/guest/login');
     }
-  }, [loading, route.path]);
+  }, [loading, route.path, route.segments.length]);
 
   if (loading) {
     return (
@@ -41,13 +40,17 @@ function Router() {
 
   const seg = route.segments;
 
+  if (route.path === '/' || seg.length === 0) {
+    return <GuestLogin />;
+  }
+
   // ---- Guest routes ----
   if (seg[0] === 'guest') {
     if (seg[1] === 'login') return <GuestLogin />;
 
     if (!session || session.type !== 'guest') {
       navigate('/guest/login');
-      return null;
+      return <GuestLogin />;
     }
 
     return (
@@ -68,7 +71,7 @@ function Router() {
 
     if (!session || (session.type !== 'staff' && session.type !== 'manager')) {
       navigate('/staff/login');
-      return null;
+      return <StaffLogin />;
     }
 
     return (
@@ -83,9 +86,8 @@ function Router() {
     );
   }
 
-  // Default redirect
   navigate('/guest/login');
-  return null;
+  return <GuestLogin />;
 }
 
 export default function App() {

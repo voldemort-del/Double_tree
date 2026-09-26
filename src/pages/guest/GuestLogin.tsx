@@ -30,11 +30,19 @@ export function GuestLogin() {
     }
   }
 
-  function fillDemo() {
+  async function fillDemoAndLogin() {
     setUsername('guest');
     setRoom('408');
     setPin('1234');
     setError('');
+    setLoading(true);
+    const ok = await loginGuest('guest', '408', '1234');
+    setLoading(false);
+    if (ok) {
+      navigate('/guest/dashboard');
+    } else {
+      setError('Demo login failed. Check that Supabase migrations were applied.');
+    }
   }
 
   return (
@@ -131,8 +139,10 @@ export function GuestLogin() {
           <div className="mt-5">
             <div className="divider-gold" />
             <button
-              onClick={fillDemo}
-              className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-ops-800 transition-all hover:bg-slate-100 hover:border-slate-300"
+              type="button"
+              onClick={fillDemoAndLogin}
+              disabled={loading}
+              className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-semibold text-ops-800 transition-all hover:bg-slate-100 hover:border-slate-300 disabled:opacity-60"
             >
               Use demo guest — Alex Morgan, Room 408
             </button>

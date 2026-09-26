@@ -4,6 +4,15 @@ import { navigate } from '@/utils/router';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { Waves, User, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
+const QUICK_LOGINS = [
+  { label: 'Maria', sub: 'Housekeeping', username: 'staff', password: 'staff123' },
+  { label: 'Daniel', sub: 'Maintenance', username: 'staff2', password: 'staff123' },
+  { label: 'Lucia', sub: 'Concierge', username: 'staff3', password: 'staff123' },
+  { label: 'Marco', sub: 'F&B', username: 'staff4', password: 'staff123' },
+  { label: 'Elena', sub: 'Spa', username: 'staff5', password: 'staff123' },
+  { label: 'Antoine', sub: 'Manager', username: 'manager', password: 'manager123', isManager: true },
+] as const;
+
 export function StaffLogin() {
   const { loginStaff } = useAuth();
   const [username, setUsername] = useState('');
@@ -11,37 +20,35 @@ export function StaffLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function completeLogin(u: string, p: string) {
     setError('');
     setLoading(true);
-    const ok = await loginStaff(username, password);
+    const auth = await loginStaff(u, p);
     setLoading(false);
-    if (!ok) {
+    if (!auth) {
       setError(
         isSupabaseConfigured
-          ? 'Invalid credentials. Please verify your username and password.'
-          : 'Invalid credentials. Try using the quick demo buttons below.'
+          ? 'Invalid credentials. Try username + password (e.g. staff / staff or staff / staff123).'
+          : 'Invalid credentials. Try using the quick demo buttons below.',
       );
       return;
     }
-    if (username.trim().toLowerCase() === 'manager') {
-      navigate('/staff/manager');
-    } else {
-      navigate('/staff/dashboard');
-    }
+    navigate(auth.role === 'manager' ? '/staff/manager' : '/staff/dashboard');
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await completeLogin(username, password);
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy-gradient px-6">
-      {/* Subtle gold radial glow behind card */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(192,128,32,0.08) 0%, transparent 65%)' }}
       />
 
       <div className="relative w-full max-w-sm animate-fade-in">
-        {/* Brand mark */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sea-400 to-sea-600 shadow-gold-glow">
             <Waves className="h-7 w-7 text-white" />
@@ -50,9 +57,7 @@ export function StaffLogin() {
           <p className="mt-1 text-sm tracking-widest uppercase text-sea-300 font-medium">DoubleTree by Hilton Malta</p>
         </div>
 
-        {/* Card */}
         <div className="rounded-2xl border border-ops-700/50 bg-ops-800/80 backdrop-blur-md p-7 shadow-navy-md animate-slide-up">
-          {/* Header row */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-base font-semibold text-white">Staff Sign In</h2>
             {isSupabaseConfigured ? (
@@ -77,7 +82,7 @@ export function StaffLogin() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="staff or manager"
+                  placeholder="staff, staff4, manager…"
                   autoComplete="off"
                   className="w-full rounded-lg border border-ops-700 bg-ops-950/80 py-2.5 pl-10 pr-3 text-sm text-white outline-none transition-colors placeholder:text-slate-400 focus:border-sea-400 focus:ring-2 focus:ring-sea-500/30"
                 />
@@ -91,7 +96,7 @@ export function StaffLogin() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••"
+                  placeholder="staff123 or password"
                   className="w-full rounded-lg border border-ops-700 bg-ops-950/80 py-2.5 pl-10 pr-3 text-sm text-white outline-none transition-colors placeholder:text-slate-400 focus:border-sea-400 focus:ring-2 focus:ring-sea-500/30"
                 />
               </div>
@@ -110,17 +115,20 @@ export function StaffLogin() {
             </button>
           </form>
 
-          {/* Demo quick logins */}
           <div className="mt-6 space-y-2">
             <div className="divider-gold" />
-            <p className="text-center text-[11px] font-semibold text-slate-300 pt-1">Quick Demo Logins</p>
+            <p className="text-center text-[11px] font-semibold text-slate-300 pt-1">Quick Demo Logins (one tap)</p>
             <div className="grid grid-cols-3 gap-2">
-              <DemoButton label="Marco"   sub="Kitchen"  onClick={() => { setUsername('staff');   setPassword('staff123'); }} />
-              <DemoButton label="Elena"   sub="Kitchen"  onClick={() => { setUsername('staff2');  setPassword('staff123'); }} />
-              <DemoButton label="Lucia"   sub="Kitchen"  onClick={() => { setUsername('staff3');  setPassword('staff123'); }} />
-              <DemoButton label="Daniel"  sub="Kitchen"  onClick={() => { setUsername('staff4');  setPassword('staff123'); }} />
-              <DemoButton label="Maria"   sub="Kitchen"  onClick={() => { setUsername('staff5');  setPassword('staff123'); }} />
-              <DemoButton label="Antoine" sub="Manager"  onClick={() => { setUsername('manager'); setPassword('manager123'); }} isManager />
+              {QUICK_LOGINS.map((entry) => (
+                <DemoButton
+                  key={entry.username}
+                  label={entry.label}
+                  sub={entry.sub}
+                  isManager={'isManager' in entry}
+                  disabled={loading}
+                  onClick={() => completeLogin(entry.username, entry.password)}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -130,15 +138,24 @@ export function StaffLogin() {
 }
 
 function DemoButton({
-  label, sub, onClick, isManager = false,
+  label,
+  sub,
+  onClick,
+  isManager = false,
+  disabled = false,
 }: {
-  label: string; sub: string; onClick: () => void; isManager?: boolean;
+  label: string;
+  sub: string;
+  onClick: () => void;
+  isManager?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={onClick}
-      className={`rounded-lg border px-2 py-2 text-center transition-all hover:-translate-y-0.5 ${
+      className={`rounded-lg border px-2 py-2 text-center transition-all hover:-translate-y-0.5 disabled:opacity-50 ${
         isManager
           ? 'border-amber-500/50 bg-amber-950/40 hover:bg-amber-900/60 hover:border-amber-400'
           : 'border-ops-700 bg-ops-900/90 hover:bg-ops-700/80 hover:border-ops-500'

@@ -17,7 +17,7 @@ interface AuthContextValue {
   guestData: GuestAuthData | null;
   staffData: StaffAuthData | null;
   loginGuest: (username: string, roomNumber: string, pin: string) => Promise<boolean>;
-  loginStaff: (username: string, password: string) => Promise<boolean>;
+  loginStaff: (username: string, password: string) => Promise<StaffAuthData | null>;
   logout: () => void;
 }
 
@@ -87,9 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data) {
       setStaffData(data);
       setSession({ type: data.role, staffId: data.staffId, name: data.name, role: data.role, department: data.department });
-      return true;
+      return data;
     }
-    return false;
+    return null;
   }, []);
 
   const logout = useCallback(() => {

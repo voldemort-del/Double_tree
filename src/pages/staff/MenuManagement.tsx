@@ -48,9 +48,9 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
     name: item?.name ?? '',
     description: item?.description ?? '',
     price: item?.price?.toString() ?? '',
+    imageUrl: item?.imageUrl ?? '',
     available: item?.available ?? true,
     availableForRoomService: item?.availableForRoomService ?? true,
-    imageUrl: item?.imageUrl ?? '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -61,6 +61,7 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
     await onSave({
       ...form,
       price: parseFloat(form.price) || 0,
+      imageUrl: form.imageUrl.trim() || undefined,
       hotelId: HOTEL_ID,
     });
     setSaving(false);
@@ -168,6 +169,29 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
             />
           </div>
 
+          <div>
+            <label className="block text-xs font-semibold text-ops-700 mb-1">Image URL</label>
+            <input
+              type="url"
+              placeholder="https://… (photo of the dish or drink)"
+              value={form.imageUrl}
+              onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+              className="w-full rounded-lg border border-ops-200 px-3 py-2 text-xs text-ops-900 placeholder:text-ops-300 focus:border-ops-600 focus:outline-none"
+            />
+            {form.imageUrl.trim() && (
+              <div className="mt-2 overflow-hidden rounded-lg border border-ops-100 bg-ops-50">
+                <img
+                  src={form.imageUrl}
+                  alt="Preview"
+                  className="h-28 w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-6 pt-1">
             <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-ops-700">
               <input
@@ -213,9 +237,10 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
 }
 
 export default function MenuManagement() {
-  const { session } = useAuth();
+  const { session, staffData } = useAuth();
   const isManager = session?.type === 'manager';
-  const isFoodAndBeverage = session?.department === 'Food & Beverage';
+  const isFoodAndBeverage =
+    staffData?.department === 'Food & Beverage' || session?.type === 'manager';
 
   const [activeVenue, setActiveVenue] = useState<'restaurant' | 'bar'>('restaurant');
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -272,6 +297,7 @@ export default function MenuManagement() {
         price: data.price,
         available: data.available,
         availableForRoomService: data.availableForRoomService,
+        imageUrl: data.imageUrl || null,
       });
     } else {
       await createMenuItem(data as CreateMenuItemInput);
@@ -475,9 +501,31 @@ export default function MenuManagement() {
                   </td>
 
                   <td className="px-4 py-3.5">
-                    <div className="font-semibold text-ops-900">{item.name}</div>
-                    <div className="text-[11px] text-ops-400 mt-0.5 max-w-sm truncate">
-                      {item.description}
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-ops-100">
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-ops-300">
+                            {activeVenue === 'bar' ? (
+                              <Wine className="h-4 w-4" />
+                            ) : (
+                              <UtensilsCrossed className="h-4 w-4" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-ops-900">{item.name}</div>
+                        <div className="text-[11px] text-ops-400 mt-0.5 max-w-sm truncate">
+                          {item.description}
+                        </div>
+                      </div>
                     </div>
                   </td>
 
