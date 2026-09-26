@@ -24,6 +24,7 @@ export interface StaffAuthData {
   department: Department;
   hotelId: string;
   housekeepingEligible: boolean;
+  maintenanceEligible: boolean;
 }
 
 // ============================================================
@@ -142,6 +143,7 @@ export async function loginStaff(
       department: member.dept,
       hotelId: 'a0000000-0000-0000-0000-000000000001',
       housekeepingEligible: cleanUsername === 'staff',
+      maintenanceEligible: cleanUsername === 'staff2',
     };
     getSessionStorage().setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
     return authData;
