@@ -9,6 +9,7 @@ import { GuestLogin } from '@/pages/guest/GuestLogin';
 import { GuestDashboard } from '@/pages/guest/GuestDashboard';
 import { GuestConcierge } from '@/pages/guest/GuestConcierge';
 import { GuestDining } from '@/pages/guest/GuestDining';
+import { GuestCart } from '@/pages/guest/GuestCart';
 import { GuestRequests } from '@/pages/guest/GuestRequests';
 import { GuestRequestDetail } from '@/pages/guest/GuestRequestDetail';
 
@@ -53,6 +54,7 @@ function Router() {
       <GuestLayout>
         {seg[1] === 'dashboard' && <GuestDashboard />}
         {seg[1] === 'dining' && <GuestDining />}
+        {seg[1] === 'cart' && <GuestCart />}
         {seg[1] === 'concierge' && <GuestConcierge />}
         {seg[1] === 'requests' && seg.length === 2 && <GuestRequests />}
         {seg[1] === 'requests' && seg.length === 3 && <GuestRequestDetail requestId={seg[2]} />}

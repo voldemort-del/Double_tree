@@ -339,7 +339,7 @@ export interface CreateRequestInput {
   description: string;
   category: string;
   priority: RequestPriority;
-  source?: string;
+  source?: 'concierge' | 'staff' | 'system';
 }
 
 export async function createRequest(input: CreateRequestInput): Promise<HotelRequest | null> {
@@ -371,7 +371,9 @@ export async function createRequest(input: CreateRequestInput): Promise<HotelReq
         .select(REQUEST_SELECT)
         .maybeSingle();
 
-      if (!error && request) {
+      if (error) {
+        console.error('createRequest Supabase insert error:', error.message);
+      } else if (request) {
         const req = rowToRequest(request as unknown as EnrichedRequest);
 
         await supabase.from('request_events').insert([

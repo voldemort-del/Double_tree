@@ -5,6 +5,10 @@ import type { Session, Department } from '@/types';
 const GUEST_SESSION_KEY = 'dth_guest_session';
 const STAFF_SESSION_KEY = 'dth_staff_session';
 
+function getSessionStorage(): Storage {
+  return typeof window !== 'undefined' ? window.sessionStorage : localStorage;
+}
+
 export interface GuestAuthData {
   guestId: string;
   name: string;
@@ -68,7 +72,7 @@ export async function loginGuest(
               stayId: stay.id,
             };
 
-            localStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(authData));
+            getSessionStorage().setItem(GUEST_SESSION_KEY, JSON.stringify(authData));
             return authData;
           }
         }
@@ -88,7 +92,7 @@ export async function loginGuest(
       hotelId: 'a0000000-0000-0000-0000-000000000001',
       stayId: 's-1',
     };
-    localStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(authData));
+    getSessionStorage().setItem(GUEST_SESSION_KEY, JSON.stringify(authData));
     return authData;
   }
 
@@ -116,6 +120,7 @@ export async function loginStaff(
   const isValidPassword =
     cleanPassword === cleanUsername ||
     cleanPassword === `${cleanUsername}123` ||
+    (cleanPassword === 'staff123' && /^staff\d*$/.test(cleanUsername)) ||
     cleanPassword === 'password';
 
   if (!isValidPassword) return null;
@@ -130,7 +135,7 @@ export async function loginStaff(
 
       if (!error && profile) {
         // Get department name
-        let department: Department = 'Front Desk';
+        let department: Department = profile.role === 'staff' ? 'Food & Beverage' : 'Front Desk';
         if (profile.department_id) {
           const { data: dept } = await supabase
             .from('departments')
@@ -138,7 +143,7 @@ export async function loginStaff(
             .eq('id', profile.department_id)
             .maybeSingle();
           if (dept) {
-            department = mapDeptName(dept.name);
+            department = profile.role === 'staff' ? 'Food & Beverage' : mapDeptName(dept.name);
           }
         }
 
@@ -150,7 +155,7 @@ export async function loginStaff(
           hotelId: profile.hotel_id,
         };
 
-        localStorage.setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
+        getSessionStorage().setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
         return authData;
       }
     } catch (err) {
@@ -177,7 +182,7 @@ export async function loginStaff(
       department: member.dept,
       hotelId: 'a0000000-0000-0000-0000-000000000001',
     };
-    localStorage.setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
+    getSessionStorage().setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
     return authData;
   }
 
@@ -186,12 +191,12 @@ export async function loginStaff(
 
 export function getStoredGuestSession(): GuestAuthData | null {
   try {
-    const raw = localStorage.getItem(GUEST_SESSION_KEY);
+    const raw = getSessionStorage().getItem(GUEST_SESSION_KEY);
     if (!raw) return null;
     const session = JSON.parse(raw) as GuestAuthData;
     if (session && (session.hotelId === 'h-1' || !session.hotelId)) {
       session.hotelId = 'a0000000-0000-0000-0000-000000000001';
-      localStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(session));
+      getSessionStorage().setItem(GUEST_SESSION_KEY, JSON.stringify(session));
     }
     return session;
   } catch {
@@ -201,7 +206,7 @@ export function getStoredGuestSession(): GuestAuthData | null {
 
 export function getStoredStaffSession(): StaffAuthData | null {
   try {
-    const raw = localStorage.getItem(STAFF_SESSION_KEY);
+    const raw = getSessionStorage().getItem(STAFF_SESSION_KEY);
     return raw ? (JSON.parse(raw) as StaffAuthData) : null;
   } catch {
     return null;
@@ -209,11 +214,11 @@ export function getStoredStaffSession(): StaffAuthData | null {
 }
 
 export function logoutGuest(): void {
-  localStorage.removeItem(GUEST_SESSION_KEY);
+  getSessionStorage().removeItem(GUEST_SESSION_KEY);
 }
 
 export function logoutStaff(): void {
-  localStorage.removeItem(STAFF_SESSION_KEY);
+  getSessionStorage().removeItem(STAFF_SESSION_KEY);
 }
 
 function mapDeptName(name: string): Department {

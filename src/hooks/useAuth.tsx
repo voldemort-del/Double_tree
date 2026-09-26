@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type { Session, Department } from '@/types';
+import type { Session } from '@/types';
 import {
   loginGuest as svcLoginGuest,
   loginStaff as svcLoginStaff,
@@ -60,9 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handler = () => syncSessionFromStorage();
     window.addEventListener('hashchange', handler);
     window.addEventListener('popstate', handler);
+    window.addEventListener('storage', handler);
     return () => {
       window.removeEventListener('hashchange', handler);
       window.removeEventListener('popstate', handler);
+      window.removeEventListener('storage', handler);
     };
   }, [syncSessionFromStorage]);
 

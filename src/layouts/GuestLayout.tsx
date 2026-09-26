@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { RouterLink, navigate } from '@/utils/router';
 import { hotelInfo } from '@/data/mockData';
-import { LogOut, Home, MessageCircle, ClipboardList, Waves, UtensilsCrossed } from 'lucide-react';
+import { LogOut, Home, MessageCircle, ClipboardList, Waves, UtensilsCrossed, ShoppingCart } from 'lucide-react';
 import { ConnectionIndicator } from '@/components/ConnectionIndicator';
 import { ToastContainer } from '@/components/ToastContainer';
 
@@ -41,6 +41,7 @@ export function GuestLayout({ children }: { children: ReactNode }) {
           <nav className="hidden md:flex items-center gap-1">
             <NavLink to="/guest/dashboard" active={isActive('/guest/dashboard')} icon={<Home className="h-4 w-4" />} label="Home" />
             <NavLink to="/guest/dining" active={isActive('/guest/dining')} icon={<UtensilsCrossed className="h-4 w-4" />} label="Dining & Bar" />
+            <NavLink to="/guest/cart" active={isActive('/guest/cart')} icon={<ShoppingCart className="h-4 w-4" />} label="Cart" />
             <NavLink to="/guest/concierge" active={isActive('/guest/concierge')} icon={<MessageCircle className="h-4 w-4" />} label="Concierge" />
             <NavLink to="/guest/requests" active={isActive('/guest/requests')} icon={<ClipboardList className="h-4 w-4" />} label="Requests" />
           </nav>
@@ -78,6 +79,7 @@ export function GuestLayout({ children }: { children: ReactNode }) {
         <MobileNavLink to="/guest/dashboard" active={isActive('/guest/dashboard')} icon={<Home className="h-5 w-5" />} label="Home" />
         <MobileNavLink to="/guest/dining" active={isActive('/guest/dining')} icon={<UtensilsCrossed className="h-5 w-5" />} label="Dining" />
         <MobileNavLink to="/guest/concierge" active={isActive('/guest/concierge')} icon={<MessageCircle className="h-5 w-5" />} label="Concierge" highlight />
+        <MobileNavLink to="/guest/cart" active={isActive('/guest/cart')} icon={<ShoppingCart className="h-5 w-5" />} label="Cart" />
         <MobileNavLink to="/guest/requests" active={isActive('/guest/requests')} icon={<ClipboardList className="h-5 w-5" />} label="Requests" />
       </nav>
     </div>

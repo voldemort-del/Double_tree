@@ -132,7 +132,7 @@ export const staff: Staff[] = [
     username: 'staff',
     password: 'staff123',
     role: 'staff',
-    department: 'Housekeeping',
+    department: 'Food & Beverage',
     avatarColor: 'bg-sand-600',
   },
   {
@@ -141,7 +141,7 @@ export const staff: Staff[] = [
     username: 'staff2',
     password: 'staff123',
     role: 'staff',
-    department: 'Maintenance',
+    department: 'Food & Beverage',
     avatarColor: 'bg-orange-600',
   },
   {
@@ -150,7 +150,7 @@ export const staff: Staff[] = [
     username: 'staff3',
     password: 'staff123',
     role: 'staff',
-    department: 'Concierge',
+    department: 'Food & Beverage',
     avatarColor: 'bg-purple-600',
   },
   {
@@ -168,7 +168,7 @@ export const staff: Staff[] = [
     username: 'staff5',
     password: 'staff123',
     role: 'staff',
-    department: 'Spa & Wellness',
+    department: 'Food & Beverage',
     avatarColor: 'bg-emerald-600',
   },
   {

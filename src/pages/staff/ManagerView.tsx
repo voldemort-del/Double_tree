@@ -493,7 +493,7 @@ function RequestsTab({
   refresh,
 }: {
   requests: HotelRequest[];
-  staffList: { id: string; first_name: string; last_name: string; role: string }[];
+  staffList: { id: string; first_name: string; last_name: string; role: string; departmentName?: string }[];
   refresh: () => void;
 }) {
   const [search, setSearch] = useState('');
@@ -502,10 +502,12 @@ function RequestsTab({
   const [deptFilter, setDeptFilter] = useState<'All' | Department>('All');
   const [slaFilter, setSlaFilter] = useState<'All' | 'Overdue' | 'Approaching' | 'On Track'>('All');
   const [assignAction, setAssignAction] = useState<{ requestId: string; currentName?: string } | null>(null);
+  const [selectedStaffId, setSelectedStaffId] = useState('');
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
   const { updateStatus, assignRequest, escalateRequest } = useStaffActions();
   const [acting, setActing] = useState<string | null>(null);
 
-  const staffOnly = staffList.filter((s) => s.role === 'staff');
+  const staffOnly = staffList.filter((s) => s.role === 'staff' && s.id);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -533,10 +535,22 @@ function RequestsTab({
 
   async function handleAssign(requestId: string, staffId: string, staffName: string) {
     setActing(requestId);
-    await assignRequest(requestId, staffId, staffName);
-    setActing(null);
-    setAssignAction(null);
-    refresh();
+    setAssignmentError(null);
+    try {
+      const assigned = await assignRequest(requestId, staffId, staffName);
+      if (!assigned) {
+        setAssignmentError('The request could not be assigned. Please try again.');
+        return;
+      }
+      setAssignAction(null);
+      setSelectedStaffId('');
+      refresh();
+    } catch (error) {
+      console.error('Manager assignment failed:', error);
+      setAssignmentError('The request could not be assigned. Please try again.');
+    } finally {
+      setActing(null);
+    }
   }
 
   async function handleEscalate(requestId: string) {
@@ -649,7 +663,11 @@ function RequestsTab({
                 ) : (
                   <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ops-100 pt-3">
                     <button
-                      onClick={() => setAssignAction({ requestId: r.id, currentName: r.assignedStaffName })}
+                      onClick={() => {
+                        setAssignAction({ requestId: r.id, currentName: r.assignedStaffName });
+                        setSelectedStaffId('');
+                        setAssignmentError(null);
+                      }}
                       className="flex items-center gap-1 rounded-md border border-ops-200 bg-ops-50 px-2.5 py-1 text-xs font-medium text-ops-700 hover:bg-ops-100 transition-colors"
                     >
                       <UserPlus className="h-3 w-3" />
@@ -690,9 +708,8 @@ function RequestsTab({
 
                 {/* Inline assign picker — Dropdown */}
                 {assignAction?.requestId === r.id && (() => {
-                  const kitchenStaff = staffOnly.filter((s) => s.departmentName === 'Food & Beverage');
-                  const otherStaff   = staffOnly.filter((s) => s.departmentName !== 'Food & Beverage');
-                  const allPooled    = [...kitchenStaff, ...otherStaff];
+                  const eligibleStaff = staffOnly.filter((s) => s.id !== 'st-mgr');
+                  const departmentLabel = 'Kitchen';
 
                   return (
                     <div className="mt-3 rounded-xl border border-ops-200 bg-white shadow-sm overflow-hidden animate-slide-up">
@@ -701,7 +718,7 @@ function RequestsTab({
                         <div>
                           <p className="text-xs font-bold text-ops-900">Assign to Staff</p>
                           <p className="text-[11px] text-ops-500 mt-0.5">
-                            <span className="font-semibold text-amber-700">Kitchen / {r.department}</span> order — select a staff member on duty
+                            <span className="font-semibold text-amber-700">{departmentLabel}</span> order — select a staff member on duty
                           </p>
                         </div>
                         <button
@@ -715,7 +732,7 @@ function RequestsTab({
                       <div className="p-4">
                         {/* Staff workload quick glance */}
                         <div className="mb-3 flex flex-wrap gap-2">
-                          {allPooled.map((s) => {
+                          {eligibleStaff.map((s) => {
                             const fullName = `${s.first_name} ${s.last_name}`;
                             const activeCount = requests.filter(
                               (req) =>
@@ -748,14 +765,14 @@ function RequestsTab({
                           <div className="relative flex-1">
                             <UtensilsCrossed className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-500 pointer-events-none" />
                             <select
-                              defaultValue={r.assignedTo ?? ''}
-                              id={`assign-select-${r.id}`}
+                              value={selectedStaffId}
+                              onChange={(event) => setSelectedStaffId(event.target.value)}
                               className="w-full appearance-none rounded-lg border border-ops-200 bg-ops-50 py-2.5 pl-9 pr-8 text-sm font-medium text-ops-900 outline-none transition-colors focus:border-amber-400 focus:ring-2 focus:ring-amber-100 cursor-pointer"
                             >
-                              <option value="" disabled>— Select a kitchen staff member —</option>
-                              {kitchenStaff.length > 0 && (
-                                <optgroup label="🍽️ Kitchen (Food & Beverage)">
-                                  {kitchenStaff.map((s) => {
+                              <option value="" disabled>— Select a staff member —</option>
+                              {eligibleStaff.length > 0 && (
+                                <optgroup label={`${departmentLabel} staff`}>
+                                  {eligibleStaff.map((s) => {
                                     const fullName = `${s.first_name} ${s.last_name}`;
                                     const activeCount = requests.filter(
                                       (req) =>
@@ -771,31 +788,27 @@ function RequestsTab({
                                   })}
                                 </optgroup>
                               )}
-                              {otherStaff.length > 0 && (
-                                <optgroup label="Other Departments">
-                                  {otherStaff.map((s) => {
-                                    const fullName = `${s.first_name} ${s.last_name}`;
-                                    return (
-                                      <option key={s.id} value={s.id}>{fullName} ({s.departmentName})</option>
-                                    );
-                                  })}
-                                </optgroup>
-                              )}
                             </select>
                             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ops-400" />
                           </div>
                           <button
+                            disabled={!selectedStaffId || isActing}
                             onClick={() => {
-                              const sel = document.getElementById(`assign-select-${r.id}`) as HTMLSelectElement;
-                              const staffId = sel?.value;
-                              const found = staffOnly.find((s) => s.id === staffId);
-                              if (found) handleAssign(r.id, found.id, `${found.first_name} ${found.last_name}`);
+                              const found = eligibleStaff.find((s) => s.id === selectedStaffId);
+                              if (found) {
+                                handleAssign(r.id, found.id, `${found.first_name} ${found.last_name}`);
+                              }
                             }}
                             className="flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors flex-shrink-0"
                           >
                             <UserPlus className="h-3.5 w-3.5" /> Assign
                           </button>
                         </div>
+                        {assignmentError && assignAction?.requestId === r.id && (
+                          <p className="mt-2 text-xs font-medium text-red-600" role="alert">
+                            {assignmentError}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );

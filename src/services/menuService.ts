@@ -18,6 +18,7 @@ function rowToMenuItem(row: any): MenuItem {
     price: Number(row.price),
     available: row.available,
     availableForRoomService: row.available_for_room_service,
+    imageUrl: row.image_url ?? undefined,
     displayOrder: row.display_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -78,6 +79,7 @@ export interface CreateMenuItemInput {
   price: number;
   available: boolean;
   availableForRoomService: boolean;
+  imageUrl?: string;
   displayOrder?: number;
 }
 
@@ -93,6 +95,7 @@ export async function createMenuItem(input: CreateMenuItemInput): Promise<MenuIt
       price: input.price,
       available: input.available,
       available_for_room_service: input.availableForRoomService,
+      image_url: input.imageUrl ?? null,
       display_order: input.displayOrder ?? 0,
     })
     .select()
@@ -113,6 +116,7 @@ export interface UpdateMenuItemInput {
   price?: number;
   available?: boolean;
   availableForRoomService?: boolean;
+  imageUrl?: string;
   displayOrder?: number;
 }
 
@@ -125,6 +129,7 @@ export async function updateMenuItem(id: string, patch: UpdateMenuItemInput): Pr
   if (patch.price !== undefined) updates.price = patch.price;
   if (patch.available !== undefined) updates.available = patch.available;
   if (patch.availableForRoomService !== undefined) updates.available_for_room_service = patch.availableForRoomService;
+  if (patch.imageUrl !== undefined) updates.image_url = patch.imageUrl || null;
   if (patch.displayOrder !== undefined) updates.display_order = patch.displayOrder;
 
   const { data, error } = await supabase

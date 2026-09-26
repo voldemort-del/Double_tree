@@ -188,6 +188,7 @@ export interface MenuItem {
   price: number;
   available: boolean;
   availableForRoomService: boolean;
+  imageUrl?: string;
   displayOrder: number;
   createdAt: string;
   updatedAt: string;

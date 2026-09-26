@@ -50,6 +50,7 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
     price: item?.price?.toString() ?? '',
     available: item?.available ?? true,
     availableForRoomService: item?.availableForRoomService ?? true,
+    imageUrl: item?.imageUrl ?? '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -85,6 +86,17 @@ function ItemModal({ item, venue, onSave, onClose }: ItemModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-ops-700 mb-1">Menu Image URL</label>
+              <input
+                type="url"
+                placeholder="https://images.unsplash.com/..."
+                value={form.imageUrl}
+                onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                className="w-full rounded-lg border border-ops-200 px-3 py-2 text-xs text-ops-900 placeholder:text-ops-300 focus:border-ops-600 focus:outline-none"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-ops-700 mb-1">Venue</label>
               <select

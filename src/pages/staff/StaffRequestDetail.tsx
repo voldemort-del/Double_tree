@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { RequestDetailCard } from '@/components/RequestDetailCard';
 import { RequestTimeline } from '@/components/RequestTimeline';
 import { RouterLink } from '@/utils/router';
-import type { RequestStatus } from '@/types';
+import type { HotelRequest } from '@/types';
 import { initials } from '@/utils/format';
 import {
   ArrowLeft,
@@ -46,8 +46,9 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
   }
 
   const staffName = staffData.name;
+  const isManager = staffData.role === 'manager';
 
-  const canAccept = request.status === 'Submitted';
+  const canAccept = request.status === 'Submitted' && !isManager;
   const canStart = request.status === 'Assigned' || request.status === 'Submitted';
   const canComplete = request.status === 'In Progress' || request.status === 'Assigned';
   const canCancel = request.status !== 'Completed' && request.status !== 'Cancelled';
@@ -149,9 +150,8 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
             {/* Assign picker — department-first */}
             {showAssign && (() => {
               const staffOnly = staffList.filter((s) => s.role === 'staff');
-              const requestDept = request.department;
-              const matchedStaff = staffOnly.filter((s) => s.departmentName === requestDept);
-              const otherStaff = staffOnly.filter((s) => s.departmentName !== requestDept);
+              const matchedStaff = staffOnly;
+              const otherStaff: typeof staffOnly = [];
 
               const StaffCard = ({ s }: { s: typeof staffOnly[0] }) => {
                 const fullName = `${s.first_name} ${s.last_name}`;

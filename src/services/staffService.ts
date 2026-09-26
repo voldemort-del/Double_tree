@@ -6,8 +6,13 @@ import type { StaffProfileRow, DepartmentRow } from '@/types/database';
 // ============================================================
 
 export interface StaffWithDepartment extends StaffProfileRow {
-  departments?: { name: string } | null;
+  departments?: { name: string } | { name: string }[] | null;
   departmentName?: string;
+}
+
+function getDepartmentName(departments: StaffWithDepartment['departments']): string | undefined {
+  if (Array.isArray(departments)) return departments[0]?.name;
+  return departments?.name;
 }
 
 const DEMO_STAFF: StaffWithDepartment[] = [
@@ -79,7 +84,7 @@ const DEMO_STAFF: StaffWithDepartment[] = [
     username: 'staff5',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    departmentName: 'Spa & Wellness',
+    departmentName: 'Food & Beverage',
   },
   {
     id: 'st-mgr',
@@ -112,7 +117,7 @@ export async function getStaffByHotel(hotelId: string): Promise<StaffWithDepartm
       if (!error && data && data.length > 0) {
         return (data as any[]).map((s) => ({
           ...s,
-          departmentName: s.departments?.name ?? undefined,
+          departmentName: s.role === 'staff' ? 'Food & Beverage' : getDepartmentName(s.departments),
         }));
       }
     } catch (err) {
@@ -138,9 +143,10 @@ export async function getStaffById(staffId: string): Promise<StaffWithDepartment
       if (!error && data) {
         return {
           ...data,
-          departmentName: (data as any).departments?.name ?? undefined,
+          departmentName: data.role === 'staff' ? 'Food & Beverage' : getDepartmentName((data as any).departments),
         };
       }
+
     } catch (err) {
       console.warn('getStaffById error:', err);
     }
