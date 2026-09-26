@@ -21,7 +21,7 @@ import {
 
 export function StaffRequestDetail({ requestId }: { requestId: string }) {
   const { staffData } = useAuth();
-  const { request, events, loading, refresh, setRequest } = useRequestDetail(requestId);
+  const { request, events, loading, error, refresh, setRequest } = useRequestDetail(requestId);
   const { updateStatus, assignRequest, escalateRequest } = useStaffActions();
   const staffList = useStaffList(staffData?.hotelId ?? '');
   const [showAssign, setShowAssign] = useState(false);
@@ -40,7 +40,7 @@ export function StaffRequestDetail({ requestId }: { requestId: string }) {
   if (!request) {
     return (
       <div className="py-12 text-center">
-        <p className="text-sm text-ops-400">Request not found.</p>
+        <p role={error ? 'alert' : undefined} className={`text-sm ${error ? 'text-red-700' : 'text-ops-400'}`}>{error ?? 'Request not found.'}</p>
         <RouterLink to="/staff/requests" className="mt-3 inline-block text-sm font-medium text-ops-600">← Back to requests</RouterLink>
       </div>
     );

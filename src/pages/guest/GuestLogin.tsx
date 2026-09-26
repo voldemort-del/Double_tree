@@ -24,7 +24,7 @@ export function GuestLogin() {
     } else {
       setError(
         isSupabaseConfigured
-          ? 'Could not sign in. Please verify your username, room number, and PIN.'
+          ? 'Could not sign in. Verify your username, room number, and PIN, then check that the room operations migration is applied and Anonymous Sign-Ins are enabled in Supabase.'
           : 'Could not sign in. Try clicking "Use demo guest" below.'
       );
     }

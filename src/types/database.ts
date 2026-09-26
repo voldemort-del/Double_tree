@@ -21,6 +21,11 @@ export interface RoomRow {
   room_type: string;
   floor: number;
   status: string;
+  assigned_housekeeper_id?: string | null;
+  maintenance_issue?: string | null;
+  last_cleaned_at?: string | null;
+  last_inspected_at?: string | null;
+  notes?: string | null;
   created_at: string;
   updated_at: string;
 }

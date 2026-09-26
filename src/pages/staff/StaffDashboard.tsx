@@ -32,7 +32,7 @@ const DEPARTMENTS: Department[] = [
 
 export function StaffDashboard() {
   const { staffData } = useAuth();
-  const { requests: allRequests, loading, newIncomingAlert, dismissAlert } = useStaffRequests(
+  const { requests: allRequests, loading, error, newIncomingAlert, dismissAlert } = useStaffRequests(
     staffData?.hotelId ?? 'a0000000-0000-0000-0000-000000000001'
   );
   const [myTab, setMyTab] = useState<'active' | 'completed'>('active');
@@ -89,6 +89,8 @@ export function StaffDashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-12">
+      {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+
       {/* Realtime Alert Banner */}
       {newIncomingAlert && (
         <div className="flex items-center justify-between rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 shadow-sm animate-slide-down">

@@ -9,7 +9,7 @@ const FILTERS: ('All' | RequestStatus)[] = ['All', 'Submitted', 'Assigned', 'In 
 
 export function GuestRequests() {
   const { session, guestData } = useAuth();
-  const { requests, loading } = useGuestRequests(guestData?.guestId ?? '');
+  const { requests, loading, error } = useGuestRequests(guestData?.guestId ?? '');
   const [filter, setFilter] = useState<'All' | RequestStatus>('All');
 
   if (session?.type !== 'guest') return null;
@@ -19,6 +19,7 @@ export function GuestRequests() {
 
   return (
     <div className="space-y-5 animate-fade-in">
+      {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
       <div>
         <h1 className="font-serif text-2xl font-semibold text-slate-800">My Requests</h1>
         <p className="mt-1 text-sm text-slate-500">Track every request you've made during your stay.</p>

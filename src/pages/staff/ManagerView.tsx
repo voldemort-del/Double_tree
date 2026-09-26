@@ -21,6 +21,7 @@ import {
 import { RouterLink, navigate } from '@/utils/router';
 import type { StaffWithDepartment } from '@/services/staffService';
 import { staffMatchesRequestDepartment } from '@/utils/staffAssignment';
+import { ManagerRoomSummary } from '@/pages/staff/ManagerRoomSummary';
 import { StatusBadge, PriorityBadge, DepartmentBadge } from '@/components/Badges';
 import {
   Loader2,
@@ -200,6 +201,7 @@ export function ManagerView() {
       <div>
         {tab === 'overview' && (
           <OverviewTab
+            hotelId={hotelId}
             requests={requests}
             rangedRequests={rangedRequests}
             deptMetrics={deptMetrics}
@@ -266,12 +268,14 @@ function KpiCard({
 // ============================================================
 
 function OverviewTab({
+  hotelId,
   requests,
   rangedRequests,
   deptMetrics,
   dailyTrend,
   timeRange,
 }: {
+  hotelId: string;
   requests: HotelRequest[];
   rangedRequests: HotelRequest[];
   deptMetrics: ReturnType<typeof filterRequestsByRange> extends infer T ? any : any;
@@ -309,6 +313,8 @@ function OverviewTab({
 
   return (
     <div className="space-y-5">
+      <ManagerRoomSummary hotelId={hotelId} />
+
       {/* Immediate Attention */}
       <SectionCard
         title="Immediate Attention"

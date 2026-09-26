@@ -1,6 +1,5 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import type { GuestRow, StaffProfileRow, DepartmentRow } from '@/types/database';
-import type { Session, Department } from '@/types';
+import type { Department } from '@/types';
 
 const GUEST_SESSION_KEY = 'dth_guest_session';
 const STAFF_SESSION_KEY = 'dth_staff_session';
@@ -24,6 +23,7 @@ export interface StaffAuthData {
   role: 'staff' | 'manager';
   department: Department;
   hotelId: string;
+  housekeepingEligible: boolean;
 }
 
 // ============================================================
@@ -39,47 +39,24 @@ export async function loginGuest(
 ): Promise<GuestAuthData | null> {
   if (isSupabaseConfigured) {
     try {
-      const { data: guest, error } = await supabase
-        .from('guests')
-        .select('id, first_name, last_name, username, pin, hotel_id')
-        .eq('username', username)
-        .maybeSingle();
-
-      if (!error && guest && String(guest.pin).trim() === pin.trim()) {
-        // Find active stay
-        const { data: stay } = await supabase
-          .from('stays')
-          .select('id, room_id, status')
-          .eq('guest_id', guest.id)
-          .eq('status', 'active')
-          .maybeSingle();
-
-        if (stay) {
-          // Verify room number matches
-          const { data: room } = await supabase
-            .from('rooms')
-            .select('id, room_number')
-            .eq('id', stay.room_id)
-            .maybeSingle();
-
-          if (room && room.room_number === roomNumber) {
-            const authData: GuestAuthData = {
-              guestId: guest.id,
-              name: `${guest.first_name} ${guest.last_name}`,
-              roomNumber: room.room_number,
-              roomId: room.id,
-              hotelId: guest.hotel_id,
-              stayId: stay.id,
-            };
-
-            getSessionStorage().setItem(GUEST_SESSION_KEY, JSON.stringify(authData));
-            return authData;
-          }
-        }
+      await ensureAuthenticatedIdentity();
+      const { data, error } = await supabase.rpc('login_guest', {
+        p_username: username.trim(),
+        p_room_number: roomNumber.trim(),
+        p_pin: pin.trim(),
+      });
+      if (error) throw error;
+      if (data) {
+        const authData = data as GuestAuthData;
+        getSessionStorage().setItem(GUEST_SESSION_KEY, JSON.stringify(authData));
+        getSessionStorage().removeItem(STAFF_SESSION_KEY);
+        return authData;
       }
     } catch (err) {
-      console.warn('Supabase guest query failed, evaluating demo fallback:', err);
+      console.error('Supabase guest authentication failed:', err);
+      return null;
     }
+    return null;
   }
 
   // Demo fallback: Alex Morgan in room 408
@@ -127,49 +104,32 @@ export async function loginStaff(
 
   if (isSupabaseConfigured) {
     try {
-      const { data: profile, error } = await supabase
-        .from('staff_profiles')
-        .select('id, first_name, last_name, role, hotel_id, department_id, username')
-        .eq('username', cleanUsername)
-        .maybeSingle();
-
-      if (!error && profile) {
-        // Get department name
-        let department: Department = profile.role === 'staff' ? 'Food & Beverage' : 'Front Desk';
-        if (profile.department_id) {
-          const { data: dept } = await supabase
-            .from('departments')
-            .select('name')
-            .eq('id', profile.department_id)
-            .maybeSingle();
-          if (dept) {
-            department = profile.role === 'staff' ? 'Food & Beverage' : mapDeptName(dept.name);
-          }
-        }
-
-        const authData: StaffAuthData = {
-          staffId: profile.id,
-          name: `${profile.first_name} ${profile.last_name}`,
-          role: profile.role as 'staff' | 'manager',
-          department,
-          hotelId: profile.hotel_id,
-        };
-
+      await ensureAuthenticatedIdentity();
+      const { data, error } = await supabase.rpc('login_staff', {
+        p_username: cleanUsername,
+        p_password: cleanPassword,
+      });
+      if (error) throw error;
+      if (data) {
+        const authData = data as StaffAuthData;
         getSessionStorage().setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
+        getSessionStorage().removeItem(GUEST_SESSION_KEY);
         return authData;
       }
     } catch (err) {
-      console.warn('Supabase staff query failed, evaluating demo fallback:', err);
+      console.error('Supabase staff authentication failed:', err);
+      return null;
     }
+    return null;
   }
 
   // Demo fallback
   const fallbackMap: Record<string, { id: string; name: string; dept: Department; role: 'staff' | 'manager' }> = {
-    staff:   { id: 'st-1', name: 'Maria Vella',     dept: 'Housekeeping',    role: 'staff' },
-    staff2:  { id: 'st-2', name: 'Daniel Zahra',    dept: 'Maintenance',     role: 'staff' },
-    staff3:  { id: 'st-3', name: 'Lucia Grech',     dept: 'Concierge',       role: 'staff' },
+    staff:   { id: 'st-1', name: 'Maria Vella',     dept: 'Food & Beverage', role: 'staff' },
+    staff2:  { id: 'st-2', name: 'Daniel Zahra',    dept: 'Food & Beverage', role: 'staff' },
+    staff3:  { id: 'st-3', name: 'Lucia Grech',     dept: 'Food & Beverage', role: 'staff' },
     staff4:  { id: 'st-4', name: 'Marco Bonnici',   dept: 'Food & Beverage', role: 'staff' },
-    staff5:  { id: 'st-5', name: 'Elena Borg',      dept: 'Spa & Wellness',  role: 'staff' },
+    staff5:  { id: 'st-5', name: 'Elena Borg',      dept: 'Food & Beverage', role: 'staff' },
     manager: { id: 'st-mgr', name: 'Antoine Caruana', dept: 'Front Desk',    role: 'manager' },
   };
 
@@ -181,6 +141,7 @@ export async function loginStaff(
       role: member.role,
       department: member.dept,
       hotelId: 'a0000000-0000-0000-0000-000000000001',
+      housekeepingEligible: cleanUsername === 'staff',
     };
     getSessionStorage().setItem(STAFF_SESSION_KEY, JSON.stringify(authData));
     return authData;
@@ -207,7 +168,10 @@ export function getStoredGuestSession(): GuestAuthData | null {
 export function getStoredStaffSession(): StaffAuthData | null {
   try {
     const raw = getSessionStorage().getItem(STAFF_SESSION_KEY);
-    return raw ? (JSON.parse(raw) as StaffAuthData) : null;
+    if (!raw) return null;
+    const session = JSON.parse(raw) as StaffAuthData;
+    session.housekeepingEligible ??= session.department === 'Housekeeping';
+    return session;
   } catch {
     return null;
   }
@@ -215,22 +179,19 @@ export function getStoredStaffSession(): StaffAuthData | null {
 
 export function logoutGuest(): void {
   getSessionStorage().removeItem(GUEST_SESSION_KEY);
+  if (isSupabaseConfigured) void supabase.auth.signOut();
 }
 
 export function logoutStaff(): void {
   getSessionStorage().removeItem(STAFF_SESSION_KEY);
+  if (isSupabaseConfigured) void supabase.auth.signOut();
 }
 
-function mapDeptName(name: string): Department {
-  const map: Record<string, Department> = {
-    'Front Desk': 'Front Desk',
-    Housekeeping: 'Housekeeping',
-    Maintenance: 'Maintenance',
-    'Food & Beverage': 'Food & Beverage',
-    Concierge: 'Concierge',
-    'Spa & Wellness': 'Spa & Wellness',
-    'Pool & Recreation': 'Concierge',
-    Management: 'Front Desk',
-  };
-  return map[name] ?? 'Front Desk';
+export async function ensureAuthenticatedIdentity(): Promise<void> {
+  const { data: current, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (current.session) return;
+
+  const { error } = await supabase.auth.signInAnonymously();
+  if (error) throw error;
 }

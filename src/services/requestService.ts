@@ -199,38 +199,26 @@ const REQUEST_SELECT = `
 
 export async function getAllRequests(hotelId: string): Promise<HotelRequest[]> {
   if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('requests')
-        .select(REQUEST_SELECT)
-        .eq('hotel_id', hotelId)
-        .order('created_at', { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        return (data as unknown as EnrichedRequest[]).map(rowToRequest);
-      }
-    } catch (err) {
-      console.warn('getAllRequests error, falling back to mock:', err);
-    }
+    const { data, error } = await supabase
+      .from('requests')
+      .select(REQUEST_SELECT)
+      .eq('hotel_id', hotelId)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(`Unable to load hotel requests: ${error.message}`);
+    return (data ?? []).map((row) => rowToRequest(row as unknown as EnrichedRequest));
   }
   return getStoredMockRequests();
 }
 
 export async function getGuestRequests(guestId: string): Promise<HotelRequest[]> {
   if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('requests')
-        .select(REQUEST_SELECT)
-        .eq('guest_id', guestId)
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        return (data as unknown as EnrichedRequest[]).map(rowToRequest);
-      }
-    } catch (err) {
-      console.warn('getGuestRequests error, falling back to mock:', err);
-    }
+    const { data, error } = await supabase
+      .from('requests')
+      .select(REQUEST_SELECT)
+      .eq('guest_id', guestId)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(`Unable to load your requests: ${error.message}`);
+    return (data ?? []).map((row) => rowToRequest(row as unknown as EnrichedRequest));
   }
   const all = getStoredMockRequests();
   return all.filter((r) => r.guestId === guestId || guestId === 'g-1' || r.guestId === 'b0000000-0000-0000-0000-000000000001');
@@ -238,19 +226,13 @@ export async function getGuestRequests(guestId: string): Promise<HotelRequest[]>
 
 export async function getRequestById(id: string): Promise<HotelRequest | null> {
   if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('requests')
-        .select(REQUEST_SELECT)
-        .eq('id', id)
-        .maybeSingle();
-
-      if (!error && data) {
-        return rowToRequest(data as unknown as EnrichedRequest);
-      }
-    } catch (err) {
-      console.warn('getRequestById error, falling back to mock:', err);
-    }
+    const { data, error } = await supabase
+      .from('requests')
+      .select(REQUEST_SELECT)
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw new Error(`Unable to load request: ${error.message}`);
+    return data ? rowToRequest(data as unknown as EnrichedRequest) : null;
   }
   const all = getStoredMockRequests();
   return all.find((r) => r.id === id) ?? null;
@@ -258,34 +240,28 @@ export async function getRequestById(id: string): Promise<HotelRequest | null> {
 
 export async function getRequestEvents(requestId: string): Promise<RequestEvent[]> {
   if (isSupabaseConfigured) {
-    try {
-      const { data: events, error } = await supabase
-        .from('request_events')
-        .select('id, request_id, actor_type, actor_id, event_type, message, metadata, created_at')
-        .eq('request_id', requestId)
-        .order('created_at', { ascending: true });
+    const { data: events, error } = await supabase
+      .from('request_events')
+      .select('id, request_id, actor_type, actor_id, event_type, message, metadata, created_at')
+      .eq('request_id', requestId)
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(`Unable to load request timeline: ${error.message}`);
 
-      if (!error && events && events.length > 0) {
-        const staffIds = events.filter((e) => e.actor_type === 'staff' && e.actor_id).map((e) => e.actor_id!);
-        let staffMap: Record<string, string> = {};
-        if (staffIds.length > 0) {
-          const { data: staffList } = await supabase
-            .from('staff_profiles')
-            .select('id, first_name, last_name')
-            .in('id', [...new Set(staffIds)]);
-          if (staffList) {
-            staffMap = staffList.reduce((acc, s) => {
-              acc[s.id] = `${s.first_name} ${s.last_name}`;
-              return acc;
-            }, {} as Record<string, string>);
-          }
-        }
-
-        return events.map((e) => rowToEvent(e as RequestEventRow, e.actor_id ? staffMap[e.actor_id] : undefined));
+    const staffIds = (events ?? []).filter((event) => event.actor_type === 'staff' && event.actor_id).map((event) => event.actor_id!);
+    const staffMap: Record<string, string> = {};
+    if (staffIds.length > 0) {
+      const { data: staffList, error: staffError } = await supabase
+        .from('staff_profiles')
+        .select('id, first_name, last_name')
+        .in('id', [...new Set(staffIds)]);
+      if (staffError) throw new Error(`Unable to load request timeline staff: ${staffError.message}`);
+      for (const staff of staffList ?? []) {
+        staffMap[staff.id] = `${staff.first_name} ${staff.last_name}`;
       }
-    } catch (err) {
-      console.warn('getRequestEvents error, falling back to mock:', err);
     }
+    return (events ?? []).map((event) =>
+      rowToEvent(event as RequestEventRow, event.actor_id ? staffMap[event.actor_id] : undefined),
+    );
   }
   const all = getStoredMockEvents();
   return all.filter((e) => e.requestId === requestId);
@@ -346,57 +322,26 @@ export async function createRequest(input: CreateRequestInput): Promise<HotelReq
   const deptName = CATEGORY_TO_DEPT[input.category] ?? 'Front Desk';
 
   if (isSupabaseConfigured) {
-    try {
-      const department = await getDepartmentByName(input.hotelId, deptName);
-      const slaMinutes = await getSlaMinutes(input.hotelId, input.priority);
-      const slaDueAt = new Date(Date.now() + slaMinutes * 60000).toISOString();
+    const { data: requestId, error } = await supabase.rpc('create_request', {
+      p_hotel_id: input.hotelId,
+      p_guest_id: input.guestId,
+      p_stay_id: input.stayId,
+      p_room_id: input.roomId,
+      p_conversation_id: input.conversationId ?? null,
+      p_title: input.title,
+      p_description: input.description,
+      p_category: input.category,
+      p_department_name: deptName,
+      p_priority: uiPriorityToDb(input.priority),
+      p_source: input.source ?? 'concierge',
+    });
+    if (error) throw new Error(`Unable to submit request: ${error.message}`);
+    if (!requestId) throw new Error('Request submission did not return a request ID.');
 
-      const { data: request, error } = await supabase
-        .from('requests')
-        .insert({
-          hotel_id: input.hotelId,
-          guest_id: input.guestId,
-          stay_id: input.stayId,
-          room_id: input.roomId,
-          conversation_id: input.conversationId ?? null,
-          department_id: department?.id ?? null,
-          title: input.title,
-          description: input.description,
-          category: input.category,
-          status: 'new',
-          priority: uiPriorityToDb(input.priority),
-          source: input.source ?? 'concierge',
-          sla_due_at: slaDueAt,
-        })
-        .select(REQUEST_SELECT)
-        .maybeSingle();
-
-      if (error) {
-        console.error('createRequest Supabase insert error:', error.message);
-      } else if (request) {
-        const req = rowToRequest(request as unknown as EnrichedRequest);
-
-        await supabase.from('request_events').insert([
-          {
-            request_id: req.id,
-            actor_type: 'guest',
-            event_type: 'created',
-            message: 'Request submitted',
-          },
-          {
-            request_id: req.id,
-            actor_type: 'assistant',
-            event_type: 'routed',
-            message: `Sent to ${deptName}`,
-          },
-        ]);
-
-        emitRealtimeEvent({ type: 'request:created', request: req });
-        return req;
-      }
-    } catch (err) {
-      console.warn('createRequest error, falling back to in-memory:', err);
-    }
+    const request = await getRequestById(requestId);
+    if (!request) throw new Error('Request was created but could not be loaded.');
+    emitRealtimeEvent({ type: 'request:created', request });
+    return request;
   }
 
   // Demo fallback

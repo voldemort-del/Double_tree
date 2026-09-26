@@ -28,6 +28,8 @@ enabled = true
 
 [auth]
 enabled = true
+enable_signup = true
+enable_anonymous_sign_ins = true
 site_url = "http://localhost:5173"
 additional_redirect_urls = ["http://localhost:5173"]
 

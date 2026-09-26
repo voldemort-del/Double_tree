@@ -39,13 +39,22 @@ export interface IncomingRequestAlert {
 export function useStaffRequests(hotelId: string) {
   const [requests, setRequests] = useState<HotelRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [newIncomingAlert, setNewIncomingAlert] = useState<IncomingRequestAlert | null>(null);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const refresh = useCallback(async () => {
-    const data = await getAllRequests(hotelId);
-    setRequests(data);
-    setLoading(false);
+    try {
+      const data = await getAllRequests(hotelId);
+      setRequests(data);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to load requests.';
+      setError(message);
+      console.error(message, err);
+    } finally {
+      setLoading(false);
+    }
   }, [hotelId]);
 
   const debouncedRefresh = useCallback(() => {
@@ -124,20 +133,29 @@ export function useStaffRequests(hotelId: string) {
     setNewIncomingAlert(null);
   }, []);
 
-  return { requests, loading, refresh, newIncomingAlert, dismissAlert };
+  return { requests, loading, error, refresh, newIncomingAlert, dismissAlert };
 }
 
 export function useGuestRequests(guestId: string) {
   const [requests, setRequests] = useState<HotelRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const requestsRef = useRef<HotelRequest[]>([]);
   requestsRef.current = requests;
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const refresh = useCallback(async () => {
-    const data = await getGuestRequests(guestId);
-    setRequests(data);
-    setLoading(false);
+    try {
+      const data = await getGuestRequests(guestId);
+      setRequests(data);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to load your requests.';
+      setError(message);
+      console.error(message, err);
+    } finally {
+      setLoading(false);
+    }
   }, [guestId]);
 
   const debouncedRefresh = useCallback(() => {
@@ -229,23 +247,32 @@ export function useGuestRequests(guestId: string) {
     };
   }, [guestId, debouncedRefresh]);
 
-  return { requests, loading, refresh };
+  return { requests, loading, error, refresh };
 }
 
 export function useRequestDetail(requestId: string) {
   const [request, setRequest] = useState<HotelRequest | null>(null);
   const [events, setEvents] = useState<RequestEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const refresh = useCallback(async () => {
-    const [req, evts] = await Promise.all([
-      getRequestById(requestId),
-      getRequestEvents(requestId),
-    ]);
-    setRequest(req);
-    setEvents(evts);
-    setLoading(false);
+    try {
+      const [req, evts] = await Promise.all([
+        getRequestById(requestId),
+        getRequestEvents(requestId),
+      ]);
+      setRequest(req);
+      setEvents(evts);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to load request details.';
+      setError(message);
+      console.error(message, err);
+    } finally {
+      setLoading(false);
+    }
   }, [requestId]);
 
   const debouncedRefresh = useCallback(() => {
@@ -291,7 +318,7 @@ export function useRequestDetail(requestId: string) {
     };
   }, [requestId, debouncedRefresh]);
 
-  return { request, events, loading, refresh, setRequest };
+  return { request, events, loading, error, refresh, setRequest };
 }
 
 export function useStaffActions() {

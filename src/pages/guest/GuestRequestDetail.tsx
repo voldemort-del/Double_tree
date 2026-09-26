@@ -7,7 +7,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export function GuestRequestDetail({ requestId }: { requestId: string }) {
   const { session } = useAuth();
-  const { request, events, loading } = useRequestDetail(requestId);
+  const { request, events, loading, error } = useRequestDetail(requestId);
 
   if (session?.type !== 'guest') return null;
 
@@ -22,7 +22,7 @@ export function GuestRequestDetail({ requestId }: { requestId: string }) {
   if (!request) {
     return (
       <div className="py-12 text-center">
-        <p className="text-sm text-slate-400">Request not found.</p>
+        <p role={error ? 'alert' : undefined} className={`text-sm ${error ? 'text-red-700' : 'text-slate-400'}`}>{error ?? 'Request not found.'}</p>
         <RouterLink to="/guest/requests" className="mt-3 inline-block text-sm font-medium text-sea-600">
           ← Back to requests
         </RouterLink>

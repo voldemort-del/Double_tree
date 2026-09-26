@@ -74,6 +74,86 @@ export interface Room {
   view: string;
 }
 
+export type RoomStatus =
+  | 'occupied'
+  | 'vacant'
+  | 'dirty'
+  | 'cleaning'
+  | 'inspected'
+  | 'ready'
+  | 'maintenance'
+  | 'out_of_order';
+
+export interface RoomOperationsRoom {
+  id: string;
+  hotelId: string;
+  roomNumber: string;
+  roomType: string;
+  floor: number;
+  status: RoomStatus;
+  stayId?: string;
+  guestId?: string;
+  guestName?: string;
+  assignedHousekeeperId?: string;
+  housekeeperName?: string;
+  maintenanceIssue?: string;
+  lastCleanedAt?: string;
+  lastInspectedAt?: string;
+  notes?: string;
+  updatedAt: string;
+  awaitingInspection: boolean;
+}
+
+export type HousekeepingTaskType =
+  | 'room_cleaning'
+  | 'stayover_cleaning'
+  | 'deep_cleaning'
+  | 'towel_replacement'
+  | 'linen_replacement'
+  | 'amenity_restocking'
+  | 'minibar_restocking'
+  | 'inspection'
+  | 'special_guest_request';
+
+export type HousekeepingTaskStatus =
+  | 'pending'
+  | 'assigned'
+  | 'in_progress'
+  | 'paused'
+  | 'completed'
+  | 'cancelled';
+
+export interface HousekeepingTask {
+  id: string;
+  hotelId: string;
+  roomId: string;
+  roomNumber: string;
+  roomType: string;
+  floor: number;
+  requestId?: string;
+  requestStatus?: string;
+  assignedStaffId?: string;
+  assignedStaffName?: string;
+  taskType: HousekeepingTaskType;
+  title: string;
+  description: string;
+  priority: RequestPriority;
+  status: HousekeepingTaskStatus;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  dueAt?: string;
+  notes: string;
+}
+
+export interface HousekeepingStaffAvailability {
+  id: string;
+  name: string;
+  departmentName: string;
+  availability: 'available' | 'busy' | 'off_shift';
+  activeTasks: number;
+}
+
 // ---- Stay ----
 
 export interface Stay {

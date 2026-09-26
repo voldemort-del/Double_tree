@@ -27,7 +27,7 @@ function daysUntil(isoDate: string | undefined): number {
 
 export function GuestDashboard() {
   const { session, guestData } = useAuth();
-  const { requests, loading } = useGuestRequests(guestData?.guestId ?? '');
+  const { requests, loading, error } = useGuestRequests(guestData?.guestId ?? '');
   const { stay } = useGuestStay(guestData?.guestId ?? '');
 
   if (session?.type !== 'guest' || !guestData) return null;
@@ -96,6 +96,8 @@ export function GuestDashboard() {
           <QuickAction to="/guest/concierge" icon={<Car className="h-5 w-5" />} label="Transport" />
         </div>
       </section>
+
+      {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
       {/* Two-column */}
       <div className="grid gap-6 lg:grid-cols-3">

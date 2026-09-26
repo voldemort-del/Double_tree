@@ -14,6 +14,12 @@ export const CHANNELS = {
   /** Manager hotel-wide view (separate so it can be removed independently) */
   managerRequests: (hotelId: string) => `manager_realtime:${hotelId}`,
 
+  /** Live room-board and housekeeping task updates */
+  roomOperations: (hotelId: string) => `room_operations:${hotelId}`,
+
+  /** Staff housekeeping work queue */
+  housekeepingTasks: (staffId: string) => `housekeeping_tasks:${staffId}`,
+
   // ── Guest ────────────────────────────────────────────────
   /** Guest-scoped request updates — filtered to guestId at subscription level */
   guestRequests: (guestId: string) => `guest_requests:${guestId}`,
@@ -36,7 +42,7 @@ export const CHANNELS = {
 // Never logs passwords, tokens, or secrets.
 const debugEnabled =
   typeof import.meta !== 'undefined' &&
-  (import.meta as any).env?.VITE_REALTIME_DEBUG === 'true';
+  import.meta.env?.VITE_REALTIME_DEBUG === 'true';
 
 export function rtLog(channel: string, event: string, meta?: Record<string, unknown>): void {
   if (!debugEnabled) return;

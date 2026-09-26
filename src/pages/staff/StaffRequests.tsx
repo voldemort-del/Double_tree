@@ -58,7 +58,7 @@ const priorityWeight: Record<RequestPriority, number> = {
 export function StaffRequests() {
   const { staffData } = useAuth();
   const hotelId = staffData?.hotelId ?? 'a0000000-0000-0000-0000-000000000001';
-  const { requests: allRequests, loading } = useStaffRequests(hotelId);
+  const { requests: allRequests, loading, error } = useStaffRequests(hotelId);
   const staffList = useStaffList(hotelId);
 
   const [search, setSearch] = useState('');
@@ -163,6 +163,7 @@ export function StaffRequests() {
 
   return (
     <div className="space-y-5 animate-fade-in pb-12">
+      {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
       {/* Header with Quick Department Switcher */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>

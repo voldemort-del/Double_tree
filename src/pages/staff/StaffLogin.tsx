@@ -5,11 +5,11 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { Waves, User, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 const QUICK_LOGINS = [
-  { label: 'Maria', sub: 'Housekeeping', username: 'staff', password: 'staff123' },
-  { label: 'Daniel', sub: 'Maintenance', username: 'staff2', password: 'staff123' },
-  { label: 'Lucia', sub: 'Concierge', username: 'staff3', password: 'staff123' },
-  { label: 'Marco', sub: 'F&B', username: 'staff4', password: 'staff123' },
-  { label: 'Elena', sub: 'Spa', username: 'staff5', password: 'staff123' },
+  { label: 'Maria', sub: 'Food & Beverage', username: 'staff', password: 'staff123' },
+  { label: 'Daniel', sub: 'Food & Beverage', username: 'staff2', password: 'staff123' },
+  { label: 'Lucia', sub: 'Food & Beverage', username: 'staff3', password: 'staff123' },
+  { label: 'Marco', sub: 'Food & Beverage', username: 'staff4', password: 'staff123' },
+  { label: 'Elena', sub: 'Food & Beverage', username: 'staff5', password: 'staff123' },
   { label: 'Antoine', sub: 'Manager', username: 'manager', password: 'manager123', isManager: true },
 ] as const;
 
@@ -28,7 +28,7 @@ export function StaffLogin() {
     if (!auth) {
       setError(
         isSupabaseConfigured
-          ? 'Invalid credentials. Try username + password (e.g. staff / staff or staff / staff123).'
+          ? 'Sign-in failed. Verify the username and password, apply the room operations migration, and enable Anonymous Sign-Ins in Supabase.'
           : 'Invalid credentials. Try using the quick demo buttons below.',
       );
       return;

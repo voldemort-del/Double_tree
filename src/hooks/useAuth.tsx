@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { Session } from '@/types';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import {
   loginGuest as svcLoginGuest,
   loginStaff as svcLoginStaff,
@@ -54,14 +55,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    syncSessionFromStorage();
-    setLoading(false);
+    let active = true;
+    const initialize = async () => {
+      if (isSupabaseConfigured) {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) console.error('Failed to restore Supabase authentication:', error);
+        if (!data.session) {
+          logoutGuest();
+          logoutStaff();
+        }
+      }
+      if (!active) return;
+      syncSessionFromStorage();
+      setLoading(false);
+    };
+    void initialize();
 
     const handler = () => syncSessionFromStorage();
     window.addEventListener('hashchange', handler);
     window.addEventListener('popstate', handler);
     window.addEventListener('storage', handler);
     return () => {
+      active = false;
       window.removeEventListener('hashchange', handler);
       window.removeEventListener('popstate', handler);
       window.removeEventListener('storage', handler);
