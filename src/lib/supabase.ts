@@ -15,12 +15,22 @@ const rawKey =
   env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   DEFAULT_KEY;
 
-export const isSupabaseConfigured = Boolean(
+const SUPABASE_DISABLED_KEY = 'dth_supabase_disabled';
+
+export let isSupabaseConfigured = Boolean(
   rawUrl &&
   rawKey &&
   !rawUrl.includes('your-project-ref') &&
-  rawKey !== 'your-anon-key-here'
+  rawKey !== 'your-anon-key-here' &&
+  (typeof window === 'undefined' || window.sessionStorage.getItem(SUPABASE_DISABLED_KEY) !== '1')
 );
+
+export function disableSupabaseForSession(): void {
+  isSupabaseConfigured = false;
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem(SUPABASE_DISABLED_KEY, '1');
+  }
+}
 
 const supabaseUrl = isSupabaseConfigured ? rawUrl : DEFAULT_URL;
 const supabaseAnonKey = isSupabaseConfigured ? rawKey : DEFAULT_KEY;

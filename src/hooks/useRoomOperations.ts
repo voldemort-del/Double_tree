@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { CHANNELS } from '@/realtime/channels';
 import type { HousekeepingTask, RoomOperationsRoom } from '@/types';
 import { getHousekeepingTasks, getRoomOperations } from '@/services/roomOperationsService';
@@ -42,7 +42,7 @@ export function useRoomOperationsData(hotelId: string) {
   }, [refresh]);
 
   useEffect(() => {
-    if (!hotelId) return;
+    if (!hotelId || !isSupabaseConfigured) return;
     const channel = supabase
       .channel(CHANNELS.roomOperations(hotelId))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `hotel_id=eq.${hotelId}` }, scheduleRefresh)
@@ -117,7 +117,7 @@ export function useHousekeepingTaskList(hotelId: string, staffId?: string) {
   }, [refresh]);
 
   useEffect(() => {
-    if (!hotelId) return;
+    if (!hotelId || !isSupabaseConfigured) return;
     const channel = supabase
       .channel(CHANNELS.housekeepingTasks(staffId ?? hotelId))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'housekeeping_tasks', filter: `hotel_id=eq.${hotelId}` }, scheduleRefresh)

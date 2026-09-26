@@ -99,7 +99,7 @@ function toTask(row: HousekeepingTaskRow): HousekeepingTask {
 }
 
 export async function getRoomOperations(hotelId: string): Promise<RoomOperationsRoom[]> {
-  requireSupabase();
+  if (!isSupabaseConfigured) return [];
   const { data: rooms, error } = await supabase
     .from('room_operations')
     .select('*')
@@ -144,7 +144,7 @@ export async function getHousekeepingTasks(
   hotelId: string,
   staffId?: string,
 ): Promise<HousekeepingTask[]> {
-  requireSupabase();
+  if (!isSupabaseConfigured) return [];
   let query = supabase
     .from('housekeeping_tasks')
     .select(`

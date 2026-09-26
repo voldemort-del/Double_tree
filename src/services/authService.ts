@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured, disableSupabaseForSession } from '@/lib/supabase';
 import type { Department } from '@/types';
 
 const GUEST_SESSION_KEY = 'dth_guest_session';
@@ -54,10 +54,11 @@ export async function loginGuest(
         return authData;
       }
     } catch (err) {
-      console.error('Supabase guest authentication failed:', err);
-      return null;
+      console.warn('Supabase guest authentication unavailable; using demo authentication:', err);
+      if (err instanceof Error && /anonymous sign-ins are disabled|failed to fetch|network/i.test(err.message)) {
+        disableSupabaseForSession();
+      }
     }
-    return null;
   }
 
   // Demo fallback: Alex Morgan in room 408
@@ -118,10 +119,11 @@ export async function loginStaff(
         return authData;
       }
     } catch (err) {
-      console.error('Supabase staff authentication failed:', err);
-      return null;
+      console.warn('Supabase staff authentication unavailable; using demo authentication:', err);
+      if (err instanceof Error && /anonymous sign-ins are disabled|failed to fetch|network/i.test(err.message)) {
+        disableSupabaseForSession();
+      }
     }
-    return null;
   }
 
   // Demo fallback
@@ -173,6 +175,7 @@ export function getStoredStaffSession(): StaffAuthData | null {
     if (!raw) return null;
     const session = JSON.parse(raw) as StaffAuthData;
     session.housekeepingEligible ??= session.department === 'Housekeeping';
+    session.maintenanceEligible ??= false;
     return session;
   } catch {
     return null;
