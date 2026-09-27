@@ -11,6 +11,7 @@ import type { HotelRequest } from '@/types';
 const SUGGESTED_PROMPTS = [
   { label: 'Request extra towels', prompt: 'Can I get two extra towels?' },
   { label: 'Report a problem', prompt: "The air conditioning isn't working." },
+  { label: 'Report maintenance issue', prompt: 'Please send maintenance to fix the air conditioning in my room.' },
   { label: 'Ask about dining', prompt: 'What dining options does the hotel have?' },
   { label: 'Ask about the spa', prompt: "I'd like to book a spa treatment." },
   { label: 'Ask about hotel facilities', prompt: 'What facilities does the hotel have?' },

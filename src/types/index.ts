@@ -154,6 +154,100 @@ export interface HousekeepingStaffAvailability {
   activeTasks: number;
 }
 
+export type MaintenanceCategory =
+  | 'Air Conditioning'
+  | 'Plumbing'
+  | 'Electrical'
+  | 'Lighting'
+  | 'TV / Entertainment'
+  | 'Wi-Fi / Network'
+  | 'Bathroom'
+  | 'Door / Lock'
+  | 'Furniture'
+  | 'Appliances'
+  | 'Safety'
+  | 'General Maintenance'
+  | 'Preventive Maintenance';
+
+export type MaintenanceWorkOrderStatus =
+  | 'reported'
+  | 'assigned'
+  | 'acknowledged'
+  | 'diagnosing'
+  | 'repair_in_progress'
+  | 'repair_completed'
+  | 'verification_required'
+  | 'verified'
+  | 'closed'
+  | 'cancelled'
+  | 'deferred'
+  | 'blocked'
+  | 'escalated';
+
+export type MaintenanceRoomImpact = 'none' | 'maintenance' | 'out_of_order';
+export type MaintenanceAction =
+  | 'assign'
+  | 'reassign'
+  | 'unassign'
+  | 'acknowledge'
+  | 'start_diagnosis'
+  | 'save_diagnosis'
+  | 'start_repair'
+  | 'add_note'
+  | 'complete_repair'
+  | 'blocked'
+  | 'defer'
+  | 'escalate'
+  | 'cancel'
+  | 'set_room_impact'
+  | 'verify'
+  | 'close'
+  | 'reopen';
+
+export interface MaintenanceWorkOrder {
+  id: string;
+  hotelId: string;
+  roomId?: string;
+  roomNumber?: string;
+  requestId?: string;
+  reportedByType: 'guest' | 'staff' | 'system';
+  reportedByName?: string;
+  assignedStaffId?: string;
+  assignedStaffName?: string;
+  category: MaintenanceCategory;
+  title: string;
+  description: string;
+  priority: RequestPriority;
+  status: MaintenanceWorkOrderStatus;
+  roomImpact: MaintenanceRoomImpact;
+  dueAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  diagnosis: string;
+  resolution: string;
+  partsMaterials: string;
+  notes: string;
+}
+
+export interface MaintenanceWorkOrderEvent {
+  id: string;
+  workOrderId: string;
+  actorType: 'guest' | 'staff' | 'manager' | 'system';
+  actorName: string;
+  eventType: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface MaintenanceStaffAvailability {
+  id: string;
+  name: string;
+  departmentName: string;
+  availability: 'available' | 'busy' | 'off_shift';
+  activeWorkOrders: number;
+  overdueWorkOrders: number;
+}
+
 export type ShiftType = 'morning' | 'afternoon' | 'evening' | 'night' | 'custom';
 export type ShiftStatus = 'scheduled' | 'active' | 'completed' | 'cancelled' | 'no_show';
 

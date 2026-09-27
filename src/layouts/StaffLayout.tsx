@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { RouterLink, navigate } from '@/utils/router';
-import { LogOut, LayoutDashboard, ClipboardList, BarChart3, Waves, UtensilsCrossed, BedDouble, Brush, CalendarDays, ArrowRightLeft } from 'lucide-react';
+import { LogOut, LayoutDashboard, ClipboardList, BarChart3, Waves, UtensilsCrossed, BedDouble, Brush, CalendarDays, ArrowRightLeft, Wrench } from 'lucide-react';
 import { ConnectionIndicator } from '@/components/ConnectionIndicator';
 import { ToastContainer } from '@/components/ToastContainer';
 
@@ -12,6 +12,7 @@ export function StaffLayout({ children }: { children: ReactNode }) {
   const path = window.location.hash.replace(/^#/, '') || '/';
   const isManager = session.type === 'manager';
   const canWorkHousekeeping = isManager || Boolean(staffData?.housekeepingEligible);
+  const canWorkMaintenance = isManager || Boolean(staffData?.maintenanceEligible) || staffData?.department === 'Maintenance';
 
   return (
     <div className="min-h-screen bg-ops-50 flex flex-col">
@@ -47,6 +48,9 @@ export function StaffLayout({ children }: { children: ReactNode }) {
                   <StaffNavLink to="/staff/rooms" active={path.startsWith('/staff/rooms')} icon={<BedDouble className="h-4 w-4" />} label="Rooms" />
                   <StaffNavLink to="/staff/housekeeping" active={path.startsWith('/staff/housekeeping')} icon={<Brush className="h-4 w-4" />} label="Housekeeping" />
                 </>
+              )}
+              {canWorkMaintenance && (
+                <StaffNavLink to="/staff/maintenance" active={path.startsWith('/staff/maintenance')} icon={<Wrench className="h-4 w-4" />} label="Maintenance" />
               )}
               {isManager && (
                 <StaffNavLink to="/staff/manager" active={path.startsWith('/staff/manager')} icon={<BarChart3 className="h-4 w-4" />} label="Manager" />
@@ -84,6 +88,9 @@ export function StaffLayout({ children }: { children: ReactNode }) {
               <StaffNavLink to="/staff/rooms" active={path.startsWith('/staff/rooms')} icon={<BedDouble className="h-3.5 w-3.5" />} label="Rooms" />
               <StaffNavLink to="/staff/housekeeping" active={path.startsWith('/staff/housekeeping')} icon={<Brush className="h-3.5 w-3.5" />} label="Housekeeping" />
             </>
+          )}
+          {canWorkMaintenance && (
+            <StaffNavLink to="/staff/maintenance" active={path.startsWith('/staff/maintenance')} icon={<Wrench className="h-3.5 w-3.5" />} label="Maintenance" />
           )}
           {isManager && (
             <StaffNavLink to="/staff/manager" active={path.startsWith('/staff/manager')} icon={<BarChart3 className="h-3.5 w-3.5" />} label="Manager" />

@@ -154,6 +154,55 @@
   .text-ops-700 { color: var(--foreground-muted) !important; }
   .text-ops-600 { color: var(--foreground-muted) !important; }
   .text-ops-500 { color: var(--muted-text, #8c867c) !important; }
+  .text-slate-900,
+  .text-slate-800,
+  .text-gray-900,
+  .text-gray-800,
+  .text-zinc-900,
+  .text-zinc-800,
+  .text-neutral-900,
+  .text-neutral-800 { color: var(--foreground) !important; }
+  .text-slate-700,
+  .text-slate-600,
+  .text-gray-700,
+  .text-gray-600,
+  .text-zinc-700,
+  .text-zinc-600,
+  .text-neutral-700,
+  .text-neutral-600 { color: var(--foreground-muted) !important; }
+  .text-slate-500,
+  .text-slate-400,
+  .text-gray-500,
+  .text-gray-400,
+  .text-zinc-500,
+  .text-zinc-400,
+  .text-neutral-500,
+  .text-neutral-400 { color: var(--muted-text) !important; }
+  .placeholder-slate-400::placeholder,
+  .placeholder-gray-400::placeholder,
+  .placeholder-zinc-400::placeholder,
+  .placeholder-neutral-400::placeholder { color: var(--muted-text) !important; opacity: 1; }
+  .bg-slate-50,
+  .bg-gray-50,
+  .bg-zinc-50,
+  .bg-neutral-50 { background-color: var(--surface) !important; }
+  .bg-slate-100,
+  .bg-gray-100,
+  .bg-zinc-100,
+  .bg-neutral-100 { background-color: var(--surface-elevated) !important; }
+  .border-slate-200,
+  .border-slate-300,
+  .border-gray-200,
+  .border-gray-300,
+  .border-zinc-200,
+  .border-zinc-300,
+  .border-neutral-200,
+  .border-neutral-300 { border-color: var(--border) !important; }
+  input,
+  select,
+  textarea { color: var(--foreground); color-scheme: dark; }
+  input::placeholder,
+  textarea::placeholder { color: var(--muted-text); opacity: 1; }
   .border-ops-200,
   .border-ops-300 { border-color: var(--border) !important; }
 }

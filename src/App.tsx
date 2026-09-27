@@ -24,6 +24,8 @@ import { HousekeepingPage } from '@/pages/staff/HousekeepingPage';
 import { SchedulePage } from '@/pages/staff/SchedulePage';
 import { MySchedulePage } from '@/pages/staff/MySchedulePage';
 import { HandoverPage } from '@/pages/staff/HandoverPage';
+import { MaintenancePage } from '@/pages/staff/MaintenancePage';
+import { MaintenanceWorkOrderDetail } from '@/pages/staff/MaintenanceWorkOrderDetail';
 
 function Router() {
   const { session, loading } = useAuth();
@@ -90,6 +92,8 @@ function Router() {
         {seg[1] === 'schedule' && <SchedulePage />}
         {seg[1] === 'my-schedule' && <MySchedulePage />}
         {seg[1] === 'handover' && <HandoverPage />}
+        {seg[1] === 'maintenance' && seg.length === 2 && <MaintenancePage />}
+        {seg[1] === 'maintenance' && seg.length === 3 && <MaintenanceWorkOrderDetail workOrderId={seg[2]} />}
         {seg[1] === 'manager' && session.type === 'manager' && <ManagerView />}
         {seg[1] === 'manager' && session.type !== 'manager' && <StaffDashboard />}
       </StaffLayout>

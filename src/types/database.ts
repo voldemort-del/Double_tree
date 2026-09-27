@@ -143,6 +143,92 @@ export interface RequestEventRow {
   created_at: string;
 }
 
+export interface MaintenanceWorkOrderRow {
+  id: string;
+  hotel_id: string;
+  room_id: string | null;
+  request_id: string | null;
+  reported_by_type: 'guest' | 'staff' | 'system';
+  reported_by_guest_id: string | null;
+  reported_by_staff_id: string | null;
+  assigned_staff_id: string | null;
+  category: string;
+  title: string;
+  description: string;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  status:
+    | 'reported'
+    | 'assigned'
+    | 'acknowledged'
+    | 'diagnosing'
+    | 'repair_in_progress'
+    | 'repair_completed'
+    | 'verification_required'
+    | 'verified'
+    | 'closed'
+    | 'cancelled'
+    | 'deferred'
+    | 'blocked'
+    | 'escalated';
+  room_impact: 'none' | 'maintenance' | 'out_of_order';
+  room_status_before: string | null;
+  due_at: string | null;
+  assigned_at: string | null;
+  started_at: string | null;
+  diagnosed_at: string | null;
+  completed_at: string | null;
+  verified_at: string | null;
+  closed_at: string | null;
+  escalated_at: string | null;
+  diagnosis: string;
+  resolution: string;
+  parts_materials: string;
+  notes: string;
+  schedule_id: string | null;
+  generated_for: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MaintenanceWorkOrderEventRow {
+  id: string;
+  work_order_id: string;
+  actor_type: 'guest' | 'staff' | 'manager' | 'system';
+  actor_id: string | null;
+  event_type: string;
+  message: string;
+  metadata: Record<string, string | number | boolean> | null;
+  created_at: string;
+}
+
+export interface MaintenanceAttachmentRow {
+  id: string;
+  work_order_id: string;
+  storage_path: string;
+  content_type: string;
+  file_size: number;
+  uploaded_by: string;
+  created_at: string;
+}
+
+export interface PreventiveMaintenanceScheduleRow {
+  id: string;
+  hotel_id: string;
+  room_id: string | null;
+  created_by: string;
+  assigned_staff_id: string | null;
+  assigned_department_id: string | null;
+  title: string;
+  description: string;
+  category: string;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+  next_due_at: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface HotelKnowledgeRow {
   id: string;
   hotel_id: string;
