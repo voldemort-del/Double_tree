@@ -6,30 +6,19 @@
 
 /* ── Design Tokens ─────────────────────────────────────────── */
 :root {
-  /* Mediterranean Deep Navy */
-  --navy-900: #090d16;
-  --navy-800: #0f1e35;
-  --navy-700: #162a4a;
-  --navy-600: #1e3a63;
-  --navy-500: #294d82;
-
-  /* Ocean Azure */
-  --sea-600: #0369a1;
-  --sea-500: #0284c7;
-  --sea-400: #38bdf8;
-  --sea-300: #7dd3fc;
-  --sea-100: #e0f2fe;
-
-  /* Warm Amber Gold Accent */
-  --gold-600: #b45309;
-  --gold-500: #d97706;
-  --gold-400: #f59e0b;
-  --gold-300: #fbbf24;
-  --gold-200: #fde68a;
-
-  /* Clean Surfaces */
-  --surface-bg: #f8fafc;
-  --surface-card: #ffffff;
+  --background: #11110f;
+  --surface: #1a1916;
+  --surface-elevated: #24221e;
+  --surface-hover: #2b2924;
+  --border: #3a362f;
+  --foreground: #f3efe6;
+  --foreground-muted: #b8b1a4;
+  --muted-text: #8c867c;
+  --accent: #c9a86a;
+  --accent-soft: #e1c892;
+  --success: #829477;
+  --warning: #b89354;
+  --danger: #a45f59;
 }
 
 @layer base {
@@ -39,13 +28,13 @@
   }
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    color: #0f172a;
-    background-color: #f8fafc;
+    color: var(--foreground);
+    background-color: var(--background);
   }
 
   /* Accessible focus ring */
   *:focus-visible {
-    outline: 2px solid #0284c7;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -55,7 +44,7 @@
   /* ── Scrollbars ─────────────────────── */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(15, 23, 42, 0.20) transparent;
+    scrollbar-color: rgba(201, 168, 106, 0.35) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 5px;
@@ -65,21 +54,21 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgba(15, 23, 42, 0.20);
+    background-color: rgba(201, 168, 106, 0.35);
     border-radius: 99px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(15, 23, 42, 0.35);
+    background-color: rgba(201, 168, 106, 0.55);
   }
 
   /* ── Accent shimmer text effect ───────── */
   .text-gold-shimmer {
     background: linear-gradient(
       90deg,
-      #0369a1 0%,
-      #38bdf8 40%,
-      #0369a1 60%,
-      #0284c7 100%
+      #98743c 0%,
+      #e1c892 40%,
+      #98743c 60%,
+      #c9a86a 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -90,36 +79,36 @@
 
   /* ── Accent border ─────────────── */
   .border-gold {
-    border-color: #d97706;
+    border-color: var(--accent);
   }
 
   /* ── Navy glass card ────────────────── */
   .card-navy {
-    background: rgba(15, 23, 42, 0.94);
+    background: rgba(26, 25, 22, 0.96);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(201, 168, 106, 0.18);
   }
 
   /* ── Clean guest card ── */
   .card-champagne {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.24);
   }
 
   /* ── Primary Action Button (High Contrast & Clear) ─────────────────── */
   .btn-gold {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%);
-    color: #ffffff;
+    background: linear-gradient(135deg, #e1c892 0%, #c9a86a 50%, #98743c 100%);
+    color: #11110f;
     font-weight: 600;
     letter-spacing: 0.02em;
-    box-shadow: 0 4px 12px 0 rgba(2, 132, 199, 0.30);
+    box-shadow: 0 4px 12px 0 rgba(201, 168, 106, 0.22);
     transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
   }
   .btn-gold:hover {
     filter: brightness(1.08);
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px 0 rgba(2, 132, 199, 0.40);
+    box-shadow: 0 6px 18px 0 rgba(201, 168, 106, 0.30);
   }
   .btn-gold:active {
     transform: translateY(0);
@@ -128,8 +117,8 @@
 
   /* ── Navy button ────────────────────── */
   .btn-navy {
-    background: linear-gradient(135deg, #0f1e35 0%, #162a4a 100%);
-    color: #ffffff;
+    background: linear-gradient(135deg, #24221e 0%, #1a1916 100%);
+    color: var(--foreground);
     font-weight: 600;
     transition: filter 0.2s, transform 0.15s;
   }
@@ -141,16 +130,30 @@
   /* ── Divider line ──────────────── */
   .divider-gold {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(2, 132, 199, 0.30), transparent);
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 106, 0.30), transparent);
   }
 
   /* ── Subtle navy gradient background ── */
   .bg-navy-gradient {
-    background: linear-gradient(160deg, #090d16 0%, #0f1e35 50%, #162a4a 100%);
+    background: linear-gradient(160deg, #11110f 0%, #1a1916 50%, #24221e 100%);
   }
 
   /* ── Clean, luminous page background (guest UI) ──────── */
   .bg-champagne-gradient {
-    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    background: linear-gradient(180deg, #11110f 0%, #1a1916 100%);
   }
+
+  /* Existing utility names are retained for compatibility while their
+     surfaces now follow the luxury operations palette. */
+  .bg-white { background-color: var(--surface-elevated) !important; }
+  .bg-ops-50 { background-color: var(--background) !important; }
+  .bg-ops-900 { background-color: var(--background) !important; }
+  .bg-ops-800 { background-color: var(--surface) !important; }
+  .text-ops-900 { color: var(--foreground) !important; }
+  .text-ops-800 { color: var(--foreground) !important; }
+  .text-ops-700 { color: var(--foreground-muted) !important; }
+  .text-ops-600 { color: var(--foreground-muted) !important; }
+  .text-ops-500 { color: var(--muted-text, #8c867c) !important; }
+  .border-ops-200,
+  .border-ops-300 { border-color: var(--border) !important; }
 }

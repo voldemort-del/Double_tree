@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { RouterLink, navigate } from '@/utils/router';
-import { LogOut, LayoutDashboard, ClipboardList, BarChart3, Waves, UtensilsCrossed, BedDouble, Brush } from 'lucide-react';
+import { LogOut, LayoutDashboard, ClipboardList, BarChart3, Waves, UtensilsCrossed, BedDouble, Brush, CalendarDays, ArrowRightLeft } from 'lucide-react';
 import { ConnectionIndicator } from '@/components/ConnectionIndicator';
 import { ToastContainer } from '@/components/ToastContainer';
 
@@ -51,6 +51,8 @@ export function StaffLayout({ children }: { children: ReactNode }) {
               {isManager && (
                 <StaffNavLink to="/staff/manager" active={path.startsWith('/staff/manager')} icon={<BarChart3 className="h-4 w-4" />} label="Manager" />
               )}
+              {isManager && <StaffNavLink to="/staff/schedule" active={path.startsWith('/staff/schedule')} icon={<CalendarDays className="h-4 w-4" />} label="Schedule" />}
+              <StaffNavLink to={isManager ? '/staff/handover' : '/staff/my-schedule'} active={path.startsWith('/staff/my-schedule') || path.startsWith('/staff/handover')} icon={<ArrowRightLeft className="h-4 w-4" />} label={isManager ? 'Handover' : 'My Shift'} />
             </nav>
           </div>
 
@@ -86,6 +88,8 @@ export function StaffLayout({ children }: { children: ReactNode }) {
           {isManager && (
             <StaffNavLink to="/staff/manager" active={path.startsWith('/staff/manager')} icon={<BarChart3 className="h-3.5 w-3.5" />} label="Manager" />
           )}
+          {isManager && <StaffNavLink to="/staff/schedule" active={path.startsWith('/staff/schedule')} icon={<CalendarDays className="h-3.5 w-3.5" />} label="Schedule" />}
+          <StaffNavLink to={isManager ? '/staff/handover' : '/staff/my-schedule'} active={path.startsWith('/staff/my-schedule') || path.startsWith('/staff/handover')} icon={<ArrowRightLeft className="h-3.5 w-3.5" />} label={isManager ? 'Handover' : 'My Shift'} />
         </nav>
       </header>
 

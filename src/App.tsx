@@ -21,6 +21,9 @@ import { ManagerView } from '@/pages/staff/ManagerView';
 import MenuManagement from '@/pages/staff/MenuManagement';
 import { RoomOperationsPage } from '@/pages/staff/RoomOperationsPage';
 import { HousekeepingPage } from '@/pages/staff/HousekeepingPage';
+import { SchedulePage } from '@/pages/staff/SchedulePage';
+import { MySchedulePage } from '@/pages/staff/MySchedulePage';
+import { HandoverPage } from '@/pages/staff/HandoverPage';
 
 function Router() {
   const { session, loading } = useAuth();
@@ -84,6 +87,9 @@ function Router() {
         {seg[1] === 'menu' && <MenuManagement />}
         {seg[1] === 'rooms' && <RoomOperationsPage initialFilter={seg[2] ?? 'all'} />}
         {seg[1] === 'housekeeping' && <HousekeepingPage />}
+        {seg[1] === 'schedule' && <SchedulePage />}
+        {seg[1] === 'my-schedule' && <MySchedulePage />}
+        {seg[1] === 'handover' && <HandoverPage />}
         {seg[1] === 'manager' && session.type === 'manager' && <ManagerView />}
         {seg[1] === 'manager' && session.type !== 'manager' && <StaffDashboard />}
       </StaffLayout>

@@ -19,6 +19,8 @@ export const CHANNELS = {
 
   /** Staff housekeeping work queue */
   housekeepingTasks: (staffId: string) => `housekeeping_tasks:${staffId}`,
+  staffSchedule: (hotelId: string) => `staff_schedule:${hotelId}`,
+  shiftHandovers: (hotelId: string) => `shift_handovers:${hotelId}`,
 
   // ── Guest ────────────────────────────────────────────────
   /** Guest-scoped request updates — filtered to guestId at subscription level */

@@ -12,59 +12,59 @@ export default {
         // Crisp, vivid ocean blue matching DoubleTree Malta's seaside location.
         // Provides high WCAG AAA contrast across both light and dark backgrounds.
         sea: {
-          50:  '#f0f7ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0284c7', // vibrant cyan-azure
-          600: '#0369a1', // high-contrast deep ocean blue
-          700: '#075985', // deep navy-blue, readable anywhere on white
-          800: '#0c4a6e',
-          900: '#082f49',
+          50:  '#f5f1e8',
+          100: '#e9e0cf',
+          200: '#d9c8a8',
+          300: '#c9a86a',
+          400: '#e1c892',
+          500: '#b89354',
+          600: '#98743c',
+          700: '#75572d',
+          800: '#4d391f',
+          900: '#2a2117',
         },
         // ── Warm Sandstone / Cashmere ─────────────────────────────────────
         // Natural seaside limestone warmth without washed-out yellow tint.
         // Mid and dark tones have high contrast for text.
         sand: {
-          50:  '#faf8f5',
-          100: '#f3efe8',
-          200: '#e6dfd3',
-          300: '#d3c5b4',
-          400: '#b49f87',
-          500: '#876e55',
-          600: '#68523c', // strong, accessible contrast on light backgrounds
-          700: '#4e3c2b',
-          800: '#382a1d',
-          900: '#231910',
+          50:  '#11110f',
+          100: '#1a1916',
+          200: '#24221e',
+          300: '#2b2924',
+          400: '#3a362f',
+          500: '#8c867c',
+          600: '#b8b1a4',
+          700: '#d3cbbd',
+          800: '#f3efe6',
+          900: '#f5f1e8',
         },
         // ── Staff & Operations Slate ──────────────────────────────────────
         // Ultra-sharp slate with deep navy undertones.
         // ops-400 and ops-500 are strengthened so labels are crisp and readable!
         ops: {
-          50:  '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#64748b', // Slate 500 — strong readable contrast on light backgrounds
-          500: '#475569', // Slate 600 — clear, crisp body text
-          600: '#334155', // Slate 700 — deep high-contrast text
-          700: '#1e293b', // Slate 800
-          800: '#0f172a', // Slate 900
-          900: '#090d16', // Ultra deep midnight navy
+          50:  '#11110f',
+          100: '#1a1916',
+          200: '#24221e',
+          300: '#2b2924',
+          400: '#8c867c',
+          500: '#b8b1a4',
+          600: '#d3cbbd',
+          700: '#e5dfd3',
+          800: '#f3efe6',
+          900: '#11110f',
         },
         // ── Amber Gold Accent ─────────────────────────────────────────────
         gold: {
-          50:  '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
+          50:  '#fbf6ea',
+          100: '#f3e6c7',
+          200: '#e1c892',
+          300: '#d7b877',
+          400: '#c9a86a',
+          500: '#b89354',
+          600: '#98743c',
+          700: '#75572d',
+          800: '#4d391f',
+          900: '#2a2117',
         },
       },
       animation: {
@@ -82,9 +82,9 @@ export default {
         shimmer:      { '0%': { backgroundPosition: '-200% center' }, '100%': { backgroundPosition: '200% center' } },
       },
       boxShadow: {
-        'navy-sm':   '0 1px 3px 0 rgba(15,23,42,0.10), 0 1px 2px -1px rgba(15,23,42,0.06)',
-        'navy-md':   '0 4px 12px 0 rgba(15,23,42,0.14), 0 2px 6px -2px rgba(15,23,42,0.06)',
-        'gold-glow': '0 0 16px 0 rgba(2,132,199,0.30)',
+        'navy-sm':   '0 1px 3px 0 rgba(0,0,0,0.28), 0 1px 2px -1px rgba(0,0,0,0.18)',
+        'navy-md':   '0 4px 12px 0 rgba(0,0,0,0.36), 0 2px 6px -2px rgba(0,0,0,0.22)',
+        'gold-glow': '0 0 16px 0 rgba(201,168,106,0.18)',
       },
     },
   },

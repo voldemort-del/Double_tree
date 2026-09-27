@@ -154,6 +154,60 @@ export interface HousekeepingStaffAvailability {
   activeTasks: number;
 }
 
+export type ShiftType = 'morning' | 'afternoon' | 'evening' | 'night' | 'custom';
+export type ShiftStatus = 'scheduled' | 'active' | 'completed' | 'cancelled' | 'no_show';
+
+export interface StaffShift {
+  id: string;
+  hotelId: string;
+  staffId: string;
+  staffName: string;
+  departmentId?: string;
+  departmentName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  shiftType: ShiftType;
+  status: ShiftStatus;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type HandoverItemType = 'request' | 'maintenance' | 'housekeeping' | 'room' | 'follow_up' | 'event';
+export type HandoverItemStatus = 'open' | 'carried_forward' | 'waiting' | 'resolved';
+
+export interface ShiftHandoverItem {
+  id: string;
+  handoverId: string;
+  itemType: HandoverItemType;
+  requestId?: string;
+  maintenanceWorkOrderId?: string;
+  housekeepingTaskId?: string;
+  roomId?: string;
+  roomNumber?: string;
+  title: string;
+  note: string;
+  status: HandoverItemStatus;
+  assignedStaffId?: string;
+  assignedStaffName?: string;
+  managerAttention: boolean;
+  createdAt: string;
+}
+
+export interface ShiftHandover {
+  id: string;
+  hotelId: string;
+  shiftId?: string;
+  createdBy: string;
+  createdByName: string;
+  departmentName: string;
+  notes: string;
+  status: 'open' | 'closed';
+  createdAt: string;
+  items: ShiftHandoverItem[];
+}
+
 // ---- Stay ----
 
 export interface Stay {
