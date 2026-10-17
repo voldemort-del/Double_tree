@@ -25,24 +25,26 @@ export function RequestCard({
   return (
     <RouterLink
       to={to}
-      className="block rounded-xl border border-ops-200 bg-ops-800/80 p-4 transition-all hover:border-ops-300 hover:shadow-md animate-slide-up"
+      className="group block rounded-xl border border-stone-800/90 bg-[#1a1916] hover:bg-[#23211c] hover:border-amber-500/40 p-4 transition-all hover:shadow-lg animate-slide-up"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-ops-500">
-            <span className="font-mono font-medium text-ops-600">{request.shortId}</span>
-            <span>·</span>
-            <span>Room {request.roomNumber}</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-stone-400">
+            <span className="font-mono font-medium text-amber-400/90">{request.shortId}</span>
+            <span className="text-stone-600">·</span>
+            <span className="font-medium text-stone-300">Room {request.roomNumber}</span>
             {showGuest && guestName && (
               <>
-                <span>·</span>
-                <span>{guestName}</span>
+                <span className="text-stone-600">·</span>
+                <span className="text-stone-300">{guestName}</span>
               </>
             )}
-            <span>·</span>
-            <span>{timeAgo(request.createdAt)}</span>
+            <span className="text-stone-600">·</span>
+            <span className="text-stone-400">{timeAgo(request.createdAt)}</span>
           </div>
-          <h4 className="mt-1 truncate text-sm font-semibold text-ops-900">{request.title}</h4>
+          <h4 className="mt-1.5 truncate text-sm font-semibold text-white group-hover:text-amber-200 transition-colors">
+            {request.title}
+          </h4>
         </div>
         <StatusBadge status={request.status} />
       </div>
@@ -51,21 +53,21 @@ export function RequestCard({
         <DepartmentBadge department={request.department} />
         <PriorityBadge priority={request.priority} />
         {showStaff && staffName && (
-          <span className="text-xs text-ops-500">
-            Assigned to <span className="font-medium text-ops-700">{staffName}</span>
+          <span className="text-xs text-stone-400">
+            Assigned to <span className="font-medium text-stone-200">{staffName}</span>
           </span>
         )}
       </div>
 
       {request.status !== 'Completed' && request.status !== 'Cancelled' && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs">
+        <div className="mt-3 flex items-center justify-between text-xs pt-2.5 border-t border-stone-800/80">
           {overdue ? (
-            <span className="flex items-center gap-1 font-medium text-red-600">
-              <AlertTriangle className="h-3.5 w-3.5" />
+            <span className="inline-flex items-center gap-1.5 font-medium text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+              <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
               Overdue by {Math.abs(remaining)}m
             </span>
           ) : (
-            <span className={`flex items-center gap-1 ${remaining < 10 ? 'text-orange-600' : 'text-ops-500'}`}>
+            <span className={`inline-flex items-center gap-1.5 ${remaining < 15 ? 'text-amber-400 font-medium' : 'text-stone-400'}`}>
               <Clock className="h-3.5 w-3.5" />
               SLA: {remaining}m remaining
             </span>

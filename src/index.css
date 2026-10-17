@@ -156,7 +156,15 @@
   .bg-white { background-color: var(--surface-elevated) !important; }
   .bg-ops-50 { background-color: var(--background) !important; }
   .bg-ops-900 { background-color: var(--background) !important; }
-  .bg-ops-800 { background-color: var(--surface) !important; }
+  .bg-ops-800,
+  .bg-ops-800\/80,
+  .bg-ops-800\/90,
+  .bg-ops-800\/70,
+  .bg-ops-800\/60,
+  .bg-ops-800\/50,
+  [class*="bg-ops-800"] {
+    background-color: var(--surface) !important;
+  }
   .text-ops-900 { color: var(--foreground) !important; }
   .text-ops-800 { color: var(--foreground) !important; }
   .text-ops-700 { color: var(--foreground-muted) !important; }
@@ -321,34 +329,34 @@
 
 @layer components {
   .badge-tone-warning {
-    color: var(--status-warning);
-    background-color: rgba(184, 147, 84, 0.15);
-    border-color: rgba(229, 198, 128, 0.38);
+    color: #fbd38d;
+    background-color: rgba(214, 158, 46, 0.16);
+    border-color: rgba(246, 173, 85, 0.35);
   }
   .badge-tone-info {
-    color: var(--status-info);
-    background-color: rgba(91, 133, 160, 0.16);
-    border-color: rgba(168, 200, 223, 0.36);
+    color: #93c5fd;
+    background-color: rgba(59, 130, 246, 0.16);
+    border-color: rgba(147, 197, 253, 0.35);
   }
   .badge-tone-violet {
-    color: var(--status-violet);
-    background-color: rgba(124, 105, 158, 0.17);
-    border-color: rgba(194, 181, 226, 0.36);
+    color: #c4b5fd;
+    background-color: rgba(139, 92, 246, 0.16);
+    border-color: rgba(196, 181, 253, 0.35);
   }
   .badge-tone-success {
-    color: var(--status-success);
-    background-color: rgba(130, 148, 119, 0.16);
-    border-color: rgba(184, 207, 170, 0.34);
+    color: #86efac;
+    background-color: rgba(34, 197, 94, 0.16);
+    border-color: rgba(134, 239, 172, 0.35);
   }
   .badge-tone-danger {
-    color: var(--status-danger);
-    background-color: rgba(164, 95, 89, 0.15);
-    border-color: rgba(227, 163, 156, 0.38);
+    color: #fca5a5;
+    background-color: rgba(239, 68, 68, 0.16);
+    border-color: rgba(252, 165, 165, 0.35);
   }
   .badge-tone-muted {
-    color: var(--foreground-muted);
-    background-color: rgba(184, 177, 164, 0.08);
-    border-color: var(--border);
+    color: #d6d3d1;
+    background-color: rgba(120, 113, 108, 0.16);
+    border-color: rgba(168, 162, 158, 0.25);
   }
   .mobile-tab-bar {
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
