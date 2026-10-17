@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { subscribeRealtimeEvents } from '@/realtime/bus';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { getMenuItems } from '@/services/menuService';
 import { getCart, saveCart, type CartItem } from '@/services/cartService';
 import { useAuth } from '@/hooks/useAuth';
@@ -32,9 +33,14 @@ export function GuestDining() {
 
   const loadMenu = useCallback(async () => {
     setLoading(true);
-    const data = await getMenuItems(HOTEL_ID);
-    setItems(data);
-    setLoading(false);
+    try {
+      const data = await getMenuItems(HOTEL_ID);
+      setItems(data);
+    } catch (err) {
+      console.error('[GuestDining] Error loading menu:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -44,16 +50,31 @@ export function GuestDining() {
   useEffect(() => {
     loadMenu();
 
-    // Subscribe to realtime menu changes from Kitchen/Manager updates
-    const channel = supabase
-      .channel('guest-dining-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
+    const unsubBus = subscribeRealtimeEvents((event) => {
+      if (event.type === 'menu:updated') {
         loadMenu();
-      })
-      .subscribe();
+      }
+    });
+
+    let channel: any = null;
+    if (isSupabaseConfigured) {
+      try {
+        channel = supabase
+          .channel('guest-dining-realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
+            loadMenu();
+          })
+          .subscribe();
+      } catch (err) {
+        console.warn('[GuestDining] Realtime channel setup failed:', err);
+      }
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      unsubBus();
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [loadMenu]);
 

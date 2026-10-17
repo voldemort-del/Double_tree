@@ -69,16 +69,19 @@ export function RouterLink({
   children,
   className,
   onClick,
+  ariaCurrent,
 }: {
   to: string;
   children: ReactNode;
   className?: string;
   onClick?: () => void;
+  ariaCurrent?: 'page';
 }) {
   return (
     <a
       href={`#${to}`}
       className={className}
+      aria-current={ariaCurrent}
       onClick={(e) => {
         e.preventDefault();
         navigate(to);

@@ -63,14 +63,14 @@ export function StaffLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-xs font-semibold text-white">{session.name}</p>
-              <p className="text-[10px] font-medium text-slate-300">{session.role === 'manager' ? 'Manager' : session.department}</p>
+              <p className="text-[10px] font-medium text-ops-500">{session.role === 'manager' ? 'Manager' : session.department}</p>
             </div>
             <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs font-bold text-ops-900 flex-shrink-0 ${isManager ? 'bg-gradient-to-br from-amber-300 to-amber-500' : 'bg-gradient-to-br from-sea-300 to-sea-500'}`}>
               {session.name.split(' ').map((p) => p[0]).join('')}
             </div>
             <button
               onClick={() => { logout(); navigate('/staff/login'); }}
-              className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-ops-800 hover:text-white flex-shrink-0"
+              className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg text-ops-400 transition-colors hover:bg-ops-800 hover:text-white flex-shrink-0"
               title="Sign Out"
             >
               <LogOut className="h-4 w-4" />
@@ -114,7 +114,7 @@ function StaffNavLink({ to, active, icon, label }: { to: string; active: boolean
       className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
         active
           ? 'bg-sea-600/30 text-sea-200 border border-sea-400/40 font-semibold'
-          : 'text-slate-300 hover:bg-ops-800 hover:text-white'
+          : 'text-ops-500 hover:bg-ops-800 hover:text-white'
       }`}
     >
       {icon}

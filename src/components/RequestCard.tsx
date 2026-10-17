@@ -25,12 +25,12 @@ export function RequestCard({
   return (
     <RouterLink
       to={to}
-      className="block rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-sand-300 hover:shadow-md animate-slide-up"
+      className="block rounded-xl border border-ops-200 bg-ops-800/80 p-4 transition-all hover:border-ops-300 hover:shadow-md animate-slide-up"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <span className="font-mono font-medium text-slate-500">{request.shortId}</span>
+          <div className="flex items-center gap-2 text-xs text-ops-500">
+            <span className="font-mono font-medium text-ops-600">{request.shortId}</span>
             <span>·</span>
             <span>Room {request.roomNumber}</span>
             {showGuest && guestName && (
@@ -42,7 +42,7 @@ export function RequestCard({
             <span>·</span>
             <span>{timeAgo(request.createdAt)}</span>
           </div>
-          <h4 className="mt-1 truncate text-sm font-semibold text-slate-800">{request.title}</h4>
+          <h4 className="mt-1 truncate text-sm font-semibold text-ops-900">{request.title}</h4>
         </div>
         <StatusBadge status={request.status} />
       </div>
@@ -51,8 +51,8 @@ export function RequestCard({
         <DepartmentBadge department={request.department} />
         <PriorityBadge priority={request.priority} />
         {showStaff && staffName && (
-          <span className="text-xs text-slate-400">
-            Assigned to <span className="font-medium text-slate-600">{staffName}</span>
+          <span className="text-xs text-ops-500">
+            Assigned to <span className="font-medium text-ops-700">{staffName}</span>
           </span>
         )}
       </div>
@@ -65,7 +65,7 @@ export function RequestCard({
               Overdue by {Math.abs(remaining)}m
             </span>
           ) : (
-            <span className={`flex items-center gap-1 ${remaining < 10 ? 'text-orange-600' : 'text-slate-400'}`}>
+            <span className={`flex items-center gap-1 ${remaining < 10 ? 'text-orange-600' : 'text-ops-500'}`}>
               <Clock className="h-3.5 w-3.5" />
               SLA: {remaining}m remaining
             </span>

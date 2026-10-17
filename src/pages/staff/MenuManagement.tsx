@@ -9,7 +9,8 @@ import {
   type CreateMenuItemInput,
 } from '@/services/menuService';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { subscribeRealtimeEvents } from '@/realtime/bus';
 import {
   UtensilsCrossed,
   Wine,
@@ -253,23 +254,44 @@ export default function MenuManagement() {
 
   const loadItems = useCallback(async () => {
     setLoading(true);
-    const data = await getMenuItems(HOTEL_ID);
-    setItems(data);
-    setLoading(false);
+    try {
+      const data = await getMenuItems(HOTEL_ID);
+      setItems(data);
+    } catch (err) {
+      console.error('[MenuManagement] Error loading menu items:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     loadItems();
 
-    const channel = supabase
-      .channel('menu-mgmt-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
+    const unsubBus = subscribeRealtimeEvents((event) => {
+      if (event.type === 'menu:updated') {
         loadItems();
-      })
-      .subscribe();
+      }
+    });
+
+    let channel: any = null;
+    if (isSupabaseConfigured) {
+      try {
+        channel = supabase
+          .channel('menu-mgmt-realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
+            loadItems();
+          })
+          .subscribe();
+      } catch (err) {
+        console.warn('[MenuManagement] Realtime channel setup failed:', err);
+      }
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      unsubBus();
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [loadItems]);
 

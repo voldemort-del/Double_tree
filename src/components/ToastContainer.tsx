@@ -26,10 +26,10 @@ export function ToastContainer() {
 
 function ToastItem({ item }: { item: Toast }) {
   const borderBg: Record<ToastType, string> = {
-    success: 'border-emerald-200 bg-white',
-    warning: 'border-amber-200 bg-white',
-    alert: 'border-red-200 bg-white',
-    info: 'border-blue-100 bg-white',
+    success: 'border-emerald-400/40 bg-ops-900',
+    warning: 'border-amber-400/40 bg-ops-900',
+    alert: 'border-red-400/40 bg-ops-900',
+    info: 'border-blue-400/40 bg-ops-900',
   };
 
   return (
@@ -41,14 +41,14 @@ function ToastItem({ item }: { item: Toast }) {
         <ToastIcon type={item.type} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-slate-800 leading-snug">{item.title}</p>
+        <p className="text-sm font-semibold text-foreground leading-snug">{item.title}</p>
         {item.message && (
-          <p className="mt-0.5 text-xs text-slate-500 leading-snug">{item.message}</p>
+          <p className="mt-0.5 text-xs text-ops-500 leading-snug">{item.message}</p>
         )}
       </div>
       <button
         onClick={() => toast.dismiss(item.id)}
-        className="flex-shrink-0 rounded text-slate-400 transition-colors hover:text-slate-600"
+        className="flex-shrink-0 rounded text-ops-500 transition-colors hover:text-ops-700"
         aria-label="Dismiss"
       >
         <X className="h-4 w-4" />

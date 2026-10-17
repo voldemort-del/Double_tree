@@ -16,7 +16,8 @@ export type RealtimeBroadcastEvent =
   | { type: 'request:updated'; request: HotelRequest }
   | { type: 'request:deleted'; id: string }
   | { type: 'request_events:created'; event: RequestEvent }
-  | { type: 'message:created'; message: Message };
+  | { type: 'message:created'; message: Message }
+  | { type: 'menu:updated' };
 
 type Listener = (event: RealtimeBroadcastEvent) => void;
 
@@ -103,3 +104,5 @@ export function subscribeToRealtimeBroadcast(listener: Listener): () => void {
     listeners.delete(listener);
   };
 }
+
+export const subscribeRealtimeEvents = subscribeToRealtimeBroadcast;

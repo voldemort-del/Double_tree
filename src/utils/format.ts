@@ -152,49 +152,49 @@ export function getSlaInfo(request: {
 export function statusColor(status: RequestStatus): string {
   switch (status) {
     case 'Submitted':
-      return 'text-amber-700 bg-amber-100 border-amber-200';
+      return 'badge-tone-warning';
     case 'Assigned':
-      return 'text-blue-700 bg-blue-100 border-blue-200';
+      return 'badge-tone-info';
     case 'In Progress':
-      return 'text-indigo-700 bg-indigo-100 border-indigo-200';
+      return 'badge-tone-violet';
     case 'Completed':
-      return 'text-emerald-700 bg-emerald-100 border-emerald-200';
+      return 'badge-tone-success';
     case 'Cancelled':
-      return 'text-slate-500 bg-slate-100 border-slate-200';
+      return 'badge-tone-muted';
     case 'Escalated':
-      return 'text-red-700 bg-red-100 border-red-200';
+      return 'badge-tone-danger';
     case 'Overdue':
-      return 'text-red-800 bg-red-200 border-red-300';
+      return 'badge-tone-danger';
   }
 }
 
 export function priorityColor(priority: RequestPriority): string {
   switch (priority) {
     case 'Low':
-      return 'text-slate-600 bg-slate-100 border-slate-200';
+      return 'badge-tone-muted';
     case 'Normal':
-      return 'text-sea-700 bg-sea-100 border-sea-200';
+      return 'badge-tone-warning';
     case 'High':
-      return 'text-orange-700 bg-orange-100 border-orange-200';
+      return 'badge-tone-warning';
     case 'Urgent':
-      return 'text-red-700 bg-red-100 border-red-200';
+      return 'badge-tone-danger';
   }
 }
 
 export function departmentColor(dept: Department): string {
   switch (dept) {
     case 'Front Desk':
-      return 'text-sea-700 bg-sea-50 border-sea-200';
+      return 'badge-tone-warning';
     case 'Housekeeping':
-      return 'text-sand-700 bg-sand-50 border-sand-200';
+      return 'badge-tone-success';
     case 'Maintenance':
-      return 'text-orange-700 bg-orange-50 border-orange-200';
+      return 'badge-tone-warning';
     case 'Food & Beverage':
-      return 'text-rose-700 bg-rose-50 border-rose-200';
+      return 'badge-tone-danger';
     case 'Concierge':
-      return 'text-purple-700 bg-purple-50 border-purple-200';
+      return 'badge-tone-violet';
     case 'Spa & Wellness':
-      return 'text-teal-700 bg-teal-50 border-teal-200';
+      return 'badge-tone-info';
   }
 }
 
