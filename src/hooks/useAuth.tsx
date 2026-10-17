@@ -6,11 +6,14 @@ import {
   loginStaff as svcLoginStaff,
   getStoredGuestSession,
   getStoredStaffSession,
+  setDirectGuestSession,
+  setDirectStaffSession,
   logoutGuest,
   logoutStaff,
   type GuestAuthData,
   type StaffAuthData,
 } from '@/services/authService';
+import { navigate } from '@/utils/router';
 
 interface AuthContextValue {
   session: Session;
@@ -19,6 +22,7 @@ interface AuthContextValue {
   staffData: StaffAuthData | null;
   loginGuest: (username: string, roomNumber: string, pin: string) => Promise<boolean>;
   loginStaff: (username: string, password: string) => Promise<StaffAuthData | null>;
+  switchPersona: (type: 'guest' | 'staff' | 'manager', data: GuestAuthData | StaffAuthData, targetRoute?: string) => void;
   logout: () => void;
 }
 
@@ -107,6 +111,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  const switchPersona = useCallback((type: 'guest' | 'staff' | 'manager', data: GuestAuthData | StaffAuthData, targetRoute?: string) => {
+    if (type === 'guest') {
+      const g = data as GuestAuthData;
+      setDirectGuestSession(g);
+      setGuestData(g);
+      setStaffData(null);
+      setSession({ type: 'guest', guestId: g.guestId, name: g.name, roomNumber: g.roomNumber });
+      navigate(targetRoute || '/guest/dashboard');
+    } else {
+      const s = data as StaffAuthData;
+      setDirectStaffSession(s);
+      setStaffData(s);
+      setGuestData(null);
+      setSession({ type: s.role, staffId: s.staffId, name: s.name, role: s.role, department: s.department });
+      navigate(targetRoute || (s.role === 'manager' ? '/staff/manager' : '/staff/dashboard'));
+    }
+  }, []);
+
   const logout = useCallback(() => {
     const loc = (window.location.hash || window.location.pathname).toLowerCase();
     if (loc.includes('staff')) {
@@ -121,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading, guestData, staffData, loginGuest, loginStaff, logout }}>
+    <AuthContext.Provider value={{ session, loading, guestData, staffData, loginGuest, loginStaff, switchPersona, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -182,6 +182,16 @@ export function getStoredStaffSession(): StaffAuthData | null {
   }
 }
 
+export function setDirectGuestSession(guest: GuestAuthData): void {
+  getSessionStorage().setItem(GUEST_SESSION_KEY, JSON.stringify(guest));
+  getSessionStorage().removeItem(STAFF_SESSION_KEY);
+}
+
+export function setDirectStaffSession(staff: StaffAuthData): void {
+  getSessionStorage().setItem(STAFF_SESSION_KEY, JSON.stringify(staff));
+  getSessionStorage().removeItem(GUEST_SESSION_KEY);
+}
+
 export function logoutGuest(): void {
   getSessionStorage().removeItem(GUEST_SESSION_KEY);
   if (isSupabaseConfigured) void supabase.auth.signOut();

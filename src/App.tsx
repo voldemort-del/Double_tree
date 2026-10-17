@@ -26,6 +26,7 @@ import { MySchedulePage } from '@/pages/staff/MySchedulePage';
 import { HandoverPage } from '@/pages/staff/HandoverPage';
 import { MaintenancePage } from '@/pages/staff/MaintenancePage';
 import { MaintenanceWorkOrderDetail } from '@/pages/staff/MaintenanceWorkOrderDetail';
+import { DemoSwitcher } from '@/components/DemoSwitcher';
 
 function Router() {
   const { session, loading } = useAuth();
@@ -108,6 +109,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router />
+      <DemoSwitcher />
     </AuthProvider>
   );
 }
